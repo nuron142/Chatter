@@ -9,4 +9,5 @@
     <string name="PARSE_CLIENT_ID">Ouw348VtykISRb2EDxfMTqsZAp3OI6lRzGmiHzMr</string>
     <string name="fb_app_id">440867796123959</string>
     <string name="google_places_api">AIzaSyBCWOwFgzl-JqFXOxylrWSCbCcecVcnDd0</string>
+    <string name="title_activity_chat">ChatActivity</string>
 </resources>

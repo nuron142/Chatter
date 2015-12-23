@@ -7,6 +7,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nuron.chatter.Adapters.UsersRecyclerAdapter;
 import com.nuron.chatter.R;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -48,6 +50,7 @@ public class HomeActivity extends AppCompatActivity
     @Bind(R.id.progress_wheel)
     ProgressWheel progressWheel;
 
+    UsersRecyclerAdapter usersRecyclerAdapter;
     CompositeSubscription allSubscriptions;
 
     @Override
@@ -59,7 +62,11 @@ public class HomeActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        progressWheel.stopSpinning();
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        usersRecyclerAdapter = new UsersRecyclerAdapter(this);
+        recyclerView.setAdapter(usersRecyclerAdapter);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle =
@@ -171,11 +178,12 @@ public class HomeActivity extends AppCompatActivity
 
     private void loadUsers() {
 
-        final ParseQuery<ParseUser> query = ParseUser.getQuery();
+        usersRecyclerAdapter.clear();
         allSubscriptions.add(Observable.fromCallable(
                 new Callable<List<ParseUser>>() {
                     @Override
                     public List<ParseUser> call() throws Exception {
+                        ParseQuery<ParseUser> query = ParseUser.getQuery();
                         return query.find();
                     }
                 })
@@ -191,6 +199,7 @@ public class HomeActivity extends AppCompatActivity
                     @Override
                     public void onCompleted() {
                         progressWheel.stopSpinning();
+                        usersRecyclerAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -199,14 +208,11 @@ public class HomeActivity extends AppCompatActivity
                         progressWheel.stopSpinning();
                         Toast.makeText(HomeActivity.this,
                                 "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
-
                     }
 
                     @Override
                     public void onNext(ParseUser parseUser) {
-
-                        Log.d(TAG, "User : " + parseUser.getUsername());
-
+                        usersRecyclerAdapter.addData(parseUser);
                     }
 
                 })

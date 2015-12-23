@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.nuron.chatter.Activities.ChatActivity"
+    tools:showIn="@layout/activity_chat">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar">
+
+        <TextView
+            android:id="@+id/empty_items_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="Send some messages  :)"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/chat_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="4dp"
+            android:gravity="bottom"
+            android:layout_alignBottom="@+id/chat_recycler_view"
+            android:layout_marginBottom="12dp">
+
+            <EditText
+                android:id="@+id/chat_editText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_margin="0dp"
+                android:hint="Write your Message"
+                android:theme="@style/ChatEditTextThemeNoLine"
+                android:layout_toStartOf="@+id/send_message_button"
+                android:textCursorDrawable="@drawable/cursor_primary_color"
+                android:textSize="18sp" />
+
+
+            <ImageView
+                android:id="@+id/send_message_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:paddingStart="10dp"
+                android:layout_margin="4dp"
+                android:paddingEnd="4dp"
+                android:background="@drawable/chat_send_circle_drawable"
+                android:src="@drawable/ic_send_white_18dp" />
+        </RelativeLayout>
+
+    </RelativeLayout>
+</RelativeLayout>
