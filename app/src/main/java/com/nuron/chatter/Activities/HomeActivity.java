@@ -27,7 +27,6 @@ import java.util.concurrent.Callable;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -93,7 +92,6 @@ public class HomeActivity extends AppCompatActivity
                 userEmailTextView.setText(userEmail);
             }
         }
-
     }
 
     @Override
@@ -112,14 +110,6 @@ public class HomeActivity extends AppCompatActivity
             allSubscriptions = null;
         }
     }
-
-
-    @OnClick(R.id.fab)
-    public void addTodoItem() {
-//        Intent intent = new Intent(this, AddToDoItemActivity.class);
-//        startActivity(intent);
-    }
-
 
     @Override
     public void onBackPressed() {

@@ -19,6 +19,7 @@ public class ChatSingle extends ParseObject {
     private String senderId;
     private String receiverId;
     private String receiverName;
+    private String imageId;
 
     public String getChatText() {
         return getString("chatText");
@@ -58,6 +59,14 @@ public class ChatSingle extends ParseObject {
 
     public void setReceiverName(String receiverName) {
         put("receiverName", receiverName);
+    }
+
+    public String getImageId() {
+        return getString("imageId");
+    }
+
+    public void setImageId(String imageId) {
+        put("imageId", imageId);
     }
 
 }

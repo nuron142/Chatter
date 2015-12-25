@@ -2,6 +2,7 @@ package com.nuron.chatter.ViewHolders;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nuron.chatter.R;
@@ -16,6 +17,8 @@ public class ChatSendViewHolder extends RecyclerView.ViewHolder {
 
     @Bind(R.id.chat_send_text)
     public TextView sendText;
+    @Bind(R.id.chat_sender_image)
+    public ImageView senderImage;
 
     public ChatSendViewHolder(View itemView) {
         super(itemView);
