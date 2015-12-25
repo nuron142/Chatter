@@ -45,7 +45,9 @@
         <activity
             android:name=".Activities.ChatActivity"
             android:label="@string/title_activity_chat"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustPan" />
+
     </application>
 
 </manifest>

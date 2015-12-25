@@ -309,7 +309,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
-        if (allSubscriptions != null && allSubscriptions.isUnsubscribed()) {
+        if (allSubscriptions != null && !allSubscriptions.isUnsubscribed()) {
             allSubscriptions.unsubscribe();
             allSubscriptions = null;
         }

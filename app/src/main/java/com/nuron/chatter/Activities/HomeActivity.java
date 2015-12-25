@@ -107,7 +107,7 @@ public class HomeActivity extends AppCompatActivity
     public void onStop() {
         super.onStop();
 
-        if (allSubscriptions != null && allSubscriptions.isUnsubscribed()) {
+        if (allSubscriptions != null && !allSubscriptions.isUnsubscribed()) {
             allSubscriptions.unsubscribe();
             allSubscriptions = null;
         }
@@ -191,6 +191,13 @@ public class HomeActivity extends AppCompatActivity
                     @Override
                     public Observable<ParseUser> call(List<ParseUser> parseUsers) {
                         return Observable.from(parseUsers);
+                    }
+                })
+                .filter(new Func1<ParseUser, Boolean>() {
+                    @Override
+                    public Boolean call(ParseUser parseUser) {
+                        return !parseUser.getObjectId()
+                                .equals(ParseUser.getCurrentUser().getObjectId());
                     }
                 })
                 .subscribeOn(Schedulers.newThread())

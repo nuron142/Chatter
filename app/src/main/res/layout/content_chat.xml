@@ -32,41 +32,55 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/chat_recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="56dp" />
+
+        <com.pnikosis.materialishprogress.ProgressWheel
+            android:id="@+id/progress_wheel"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="48dp"
+            app:matProg_barColor="#5588FF"
+            app:matProg_progressIndeterminate="true" />
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="56dp"
             android:layout_alignParentBottom="true"
-            android:layout_margin="4dp"
-            android:gravity="bottom"
-            android:layout_alignBottom="@+id/chat_recycler_view"
-            android:layout_marginBottom="12dp">
+            android:gravity="bottom">
 
-            <EditText
-                android:id="@+id/chat_editText"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_margin="0dp"
-                android:hint="Write your Message"
-                android:theme="@style/ChatEditTextThemeNoLine"
-                android:layout_toStartOf="@+id/send_message_button"
-                android:textCursorDrawable="@drawable/cursor_primary_color"
-                android:textSize="18sp" />
+                android:layout_height="match_parent"
+                android:layout_margin="4dp">
+
+                <EditText
+                    android:id="@+id/chat_editText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_margin="0dp"
+                    android:layout_toStartOf="@+id/send_message_button"
+                    android:hint="Write your Message"
+                    android:textCursorDrawable="@drawable/cursor_primary_color"
+                    android:textSize="18sp"
+                    android:theme="@style/ChatEditTextThemeNoLine" />
 
 
-            <ImageView
-                android:id="@+id/send_message_button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:paddingStart="10dp"
-                android:layout_margin="4dp"
-                android:paddingEnd="4dp"
-                android:background="@drawable/chat_send_circle_drawable"
-                android:src="@drawable/ic_send_white_18dp" />
+                <ImageView
+                    android:id="@+id/send_message_button"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/chat_send_circle_drawable"
+                    android:paddingEnd="4dp"
+                    android:paddingStart="10dp"
+                    android:src="@drawable/ic_send_white_18dp" />
+            </RelativeLayout>
+
         </RelativeLayout>
 
     </RelativeLayout>

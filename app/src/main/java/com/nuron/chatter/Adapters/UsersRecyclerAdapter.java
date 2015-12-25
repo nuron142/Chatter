@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.nuron.chatter.Activities.ChatActivity;
 import com.nuron.chatter.Activities.LoginActivity;
+import com.nuron.chatter.Model.ChatSingle;
 import com.nuron.chatter.R;
 import com.parse.ParseUser;
 
@@ -68,7 +69,12 @@ public class UsersRecyclerAdapter extends RecyclerView.Adapter<UsersRecyclerAdap
         viewHolder.userLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(new Intent(context, ChatActivity.class));
+
+                Intent intent = new Intent(context, ChatActivity.class);
+                intent.putExtra(ChatSingle.RECEIVER_ID, parseUser.getObjectId());
+                intent.putExtra(LoginActivity.USER_ACCOUNT_NAME,
+                        parseUser.getString(LoginActivity.USER_ACCOUNT_NAME));
+                context.startActivity(intent);
             }
         });
 
