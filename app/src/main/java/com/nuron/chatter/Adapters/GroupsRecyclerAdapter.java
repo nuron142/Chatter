@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.nuron.chatter.Activities.ChatGroupActivity;
+import com.nuron.chatter.Model.ChatGroup;
 import com.nuron.chatter.Model.ChatGroupMessage;
-import com.nuron.chatter.Model.ChatGroups;
 import com.nuron.chatter.R;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import butterknife.ButterKnife;
  */
 public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAdapter.ViewHolder> {
 
-    List<ChatGroups> chatGroups;
+    List<ChatGroup> chatGroups;
     Context context;
     private final static String TAG = GroupsRecyclerAdapter.class.getSimpleName();
 
@@ -34,7 +34,7 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
         chatGroups = new ArrayList<>();
     }
 
-    public void addData(ChatGroups chatGroup) {
+    public void addData(ChatGroup chatGroup) {
         chatGroups.add(chatGroup);
     }
 
@@ -57,9 +57,9 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        final ChatGroups chatGroup = chatGroups.get(position);
+        final ChatGroup chatGroup = chatGroups.get(position);
 
-        viewHolder.userName.setText(chatGroup.getString(ChatGroups.GROUP_NAME));
+        viewHolder.userName.setText(chatGroup.getString(ChatGroup.GROUP_NAME));
 
         viewHolder.userLayout.setOnClickListener(new View.OnClickListener() {
             @Override

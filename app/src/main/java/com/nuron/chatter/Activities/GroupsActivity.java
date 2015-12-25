@@ -18,8 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nuron.chatter.Adapters.GroupsRecyclerAdapter;
+import com.nuron.chatter.Model.ChatGroup;
 import com.nuron.chatter.Model.ChatGroupMessage;
-import com.nuron.chatter.Model.ChatGroups;
 import com.nuron.chatter.R;
 import com.parse.ParseACL;
 import com.parse.ParseQuery;
@@ -111,7 +111,7 @@ public class GroupsActivity extends AppCompatActivity
     @OnClick(R.id.fab)
     public void addNewGroup() {
 
-        ChatGroups chatGroup = new ChatGroups();
+        ChatGroup chatGroup = new ChatGroup();
         chatGroup.setGroupId(UUID.randomUUID().toString());
         chatGroup.setGroupName("Test Group");
         ParseACL groupAcl = new ParseACL();
@@ -134,9 +134,9 @@ public class GroupsActivity extends AppCompatActivity
         chatGroupMessage.setACL(acl);
 
         allSubscriptions.add(ParseObservable.save(chatGroup)
-                .flatMap(new Func1<ChatGroups, Observable<ChatGroupMessage>>() {
+                .flatMap(new Func1<ChatGroup, Observable<ChatGroupMessage>>() {
                     @Override
-                    public Observable<ChatGroupMessage> call(ChatGroups chatGroups) {
+                    public Observable<ChatGroupMessage> call(ChatGroup chatGroup) {
                         return ParseObservable.save(chatGroupMessage);
                     }
                 })
@@ -242,26 +242,26 @@ public class GroupsActivity extends AppCompatActivity
 
     private void loadChatGroups() {
 
-        final ParseQuery<ChatGroups> groupsQuery = ParseQuery.getQuery(ChatGroups.class);
-        groupsQuery.addDescendingOrder(ChatGroups.UPDATED_AT);
+        final ParseQuery<ChatGroup> groupsQuery = ParseQuery.getQuery(ChatGroup.class);
+        groupsQuery.addDescendingOrder(ChatGroup.UPDATED_AT);
 
         progressWheel.spin();
         groupsRecyclerAdapter.clear();
 
         allSubscriptions.add(Observable.fromCallable(
-                new Callable<List<ChatGroups>>() {
+                new Callable<List<ChatGroup>>() {
                     @Override
-                    public List<ChatGroups> call() throws Exception {
+                    public List<ChatGroup> call() throws Exception {
                         return groupsQuery.find();
                     }
                 })
-                .flatMap(new Func1<List<ChatGroups>, Observable<ChatGroups>>() {
+                .flatMap(new Func1<List<ChatGroup>, Observable<ChatGroup>>() {
                     @Override
-                    public Observable<ChatGroups> call(List<ChatGroups> chatGroupses) {
+                    public Observable<ChatGroup> call(List<ChatGroup> chatGroupses) {
                         return Observable.from(chatGroupses);
                     }
                 })
-                .subscribe(new Subscriber<ChatGroups>() {
+                .subscribe(new Subscriber<ChatGroup>() {
                     @Override
                     public void onCompleted() {
                         progressWheel.stopSpinning();
@@ -277,8 +277,8 @@ public class GroupsActivity extends AppCompatActivity
                     }
 
                     @Override
-                    public void onNext(ChatGroups chatGroups) {
-                        groupsRecyclerAdapter.addData(chatGroups);
+                    public void onNext(ChatGroup chatGroup) {
+                        groupsRecyclerAdapter.addData(chatGroup);
                     }
                 })
         );

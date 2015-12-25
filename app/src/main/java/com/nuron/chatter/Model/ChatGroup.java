@@ -7,8 +7,8 @@ import com.parse.ParseObject;
  * Created by nuron on 26/12/15.
  */
 
-@ParseClassName("ChatGroups")
-public class ChatGroups extends ParseObject {
+@ParseClassName("ChatGroup")
+public class ChatGroup extends ParseObject {
 
     public static final String GROUP_NAME = "groupName";
     public static final String GROUP_ID = "groupId";
