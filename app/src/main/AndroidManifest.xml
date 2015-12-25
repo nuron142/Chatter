@@ -36,8 +36,20 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".Activities.ChatActivity"
+            android:name=".Activities.ChatSingleActivity"
             android:label="@string/title_activity_chat"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustPan" />
+
+        <activity
+            android:name=".Activities.GroupsActivity"
+            android:label="Groups"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustPan" />
+
+        <activity
+            android:name=".Activities.ChatGroupActivity"
+            android:label="Groups"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustPan" />
 

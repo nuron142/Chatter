@@ -2,10 +2,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/users_activity"
+            android:icon="@drawable/ic_person_black_24dp"
+            android:title="Users" />
+
+        <item
+            android:id="@+id/groups_activity"
+            android:icon="@drawable/ic_group_black_24dp"
+            android:title="Groups" />
+
         <item
             android:id="@+id/logout"
             android:icon="@drawable/ic_power_settings_new_black_48dp"
             android:title="Logout" />
+
     </group>
 
 </menu>

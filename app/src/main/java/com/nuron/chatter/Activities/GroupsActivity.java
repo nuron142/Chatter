@@ -1,8 +1,8 @@
 package com.nuron.chatter.Activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,13 +17,17 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nuron.chatter.Adapters.UsersRecyclerAdapter;
+import com.nuron.chatter.Adapters.GroupsRecyclerAdapter;
+import com.nuron.chatter.Model.ChatGroupMessage;
+import com.nuron.chatter.Model.ChatGroups;
 import com.nuron.chatter.R;
+import com.parse.ParseACL;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import butterknife.Bind;
@@ -37,7 +41,10 @@ import rx.parse.ParseObservable;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
-public class HomeActivity extends AppCompatActivity
+/**
+ * Created by nuron on 26/12/15.
+ */
+public class GroupsActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private final static String TAG = HomeActivity.class.getSimpleName();
@@ -51,8 +58,11 @@ public class HomeActivity extends AppCompatActivity
     @Bind(R.id.progress_wheel)
     ProgressWheel progressWheel;
 
-    UsersRecyclerAdapter usersRecyclerAdapter;
+    GroupsRecyclerAdapter groupsRecyclerAdapter;
     CompositeSubscription allSubscriptions;
+
+    String senderId, groupId, groupName;
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,14 +70,16 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
 
         ButterKnife.bind(this);
+        context = this;
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        usersRecyclerAdapter = new UsersRecyclerAdapter(this);
-        recyclerView.setAdapter(usersRecyclerAdapter);
+        groupsRecyclerAdapter = new GroupsRecyclerAdapter(this);
+        recyclerView.setAdapter(groupsRecyclerAdapter);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle =
@@ -97,16 +109,62 @@ public class HomeActivity extends AppCompatActivity
     }
 
     @OnClick(R.id.fab)
-    public void addChatUser() {
+    public void addNewGroup() {
+
+        ChatGroups chatGroup = new ChatGroups();
+        chatGroup.setGroupId(UUID.randomUUID().toString());
+        chatGroup.setGroupName("Test Group");
+        ParseACL groupAcl = new ParseACL();
+        groupAcl.setPublicReadAccess(true);
+        groupAcl.setWriteAccess(ParseUser.getCurrentUser(), true);
+        chatGroup.setACL(groupAcl);
+
+        final ChatGroupMessage chatGroupMessage = new ChatGroupMessage();
+        chatGroupMessage.setChatText("Group created by " +
+                ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
+        chatGroupMessage.setSenderId(ParseUser.getCurrentUser().getObjectId());
+        chatGroupMessage.setGroupId(chatGroup.getGroupId());
+        chatGroupMessage.setGroupName(chatGroup.getGroupName());
+        chatGroupMessage.setSenderName(
+                ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
+
+        ParseACL acl = new ParseACL();
+        acl.setReadAccess(ParseUser.getCurrentUser(), true);
+        acl.setWriteAccess(ParseUser.getCurrentUser(), true);
+        chatGroupMessage.setACL(acl);
+
+        allSubscriptions.add(ParseObservable.save(chatGroup)
+                .flatMap(new Func1<ChatGroups, Observable<ChatGroupMessage>>() {
+                    @Override
+                    public Observable<ChatGroupMessage> call(ChatGroups chatGroups) {
+                        return ParseObservable.save(chatGroupMessage);
+                    }
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<ChatGroupMessage>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG, "New Chat group saved");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+
+                    @Override
+                    public void onNext(ChatGroupMessage chatSingleMessage) {
+                    }
+                })
+        );
 
     }
-
 
     @Override
     public void onStart() {
         super.onStart();
         allSubscriptions = new CompositeSubscription();
-        loadUsers();
+        loadChatGroups();
     }
 
     @Override
@@ -139,23 +197,17 @@ public class HomeActivity extends AppCompatActivity
 
         if (id == R.id.logout) {
             logOutUser();
-        } else if (id == R.id.groups_activity) {
-
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    launchGroupsActivity();
-                }
-            }, 300);
+        } else if (id == R.id.users_activity) {
+            launchHomeActivity();
         }
         return true;
     }
 
-    private void launchGroupsActivity() {
-
-        Log.d(TAG, "Launching groups activity");
-        Intent intent = new Intent(HomeActivity.this, GroupsActivity.class);
+    private void launchHomeActivity() {
+        Log.d(TAG, "Launching home activity");
+        Intent intent = new Intent(GroupsActivity.this, HomeActivity.class);
         startActivity(intent);
+        finish();
     }
 
     public void logOutUser() {
@@ -167,7 +219,7 @@ public class HomeActivity extends AppCompatActivity
                     @Override
                     public void onCompleted() {
                         Log.d(TAG, "Logged out successfully");
-                        Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                        Intent intent = new Intent(GroupsActivity.this, LoginActivity.class);
                         startActivity(intent);
                         finish();
                     }
@@ -175,7 +227,7 @@ public class HomeActivity extends AppCompatActivity
                     @Override
                     public void onError(Throwable e) {
                         Log.d(TAG, "Logout failed : " + e);
-                        Toast.makeText(HomeActivity.this, "Logout failed : " + e.getMessage(),
+                        Toast.makeText(GroupsActivity.this, "Logout failed : " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
 
@@ -188,54 +240,49 @@ public class HomeActivity extends AppCompatActivity
     }
 
 
-    private void loadUsers() {
+    private void loadChatGroups() {
 
-        usersRecyclerAdapter.clear();
+        final ParseQuery<ChatGroups> groupsQuery = ParseQuery.getQuery(ChatGroups.class);
+        groupsQuery.addDescendingOrder(ChatGroups.UPDATED_AT);
+
+        progressWheel.spin();
+        groupsRecyclerAdapter.clear();
+
         allSubscriptions.add(Observable.fromCallable(
-                new Callable<List<ParseUser>>() {
+                new Callable<List<ChatGroups>>() {
                     @Override
-                    public List<ParseUser> call() throws Exception {
-                        ParseQuery<ParseUser> query = ParseUser.getQuery();
-                        return query.find();
+                    public List<ChatGroups> call() throws Exception {
+                        return groupsQuery.find();
                     }
                 })
-                .flatMap(new Func1<List<ParseUser>, Observable<ParseUser>>() {
+                .flatMap(new Func1<List<ChatGroups>, Observable<ChatGroups>>() {
                     @Override
-                    public Observable<ParseUser> call(List<ParseUser> parseUsers) {
-                        return Observable.from(parseUsers);
+                    public Observable<ChatGroups> call(List<ChatGroups> chatGroupses) {
+                        return Observable.from(chatGroupses);
                     }
                 })
-                .filter(new Func1<ParseUser, Boolean>() {
-                    @Override
-                    public Boolean call(ParseUser parseUser) {
-                        return !parseUser.getObjectId()
-                                .equals(ParseUser.getCurrentUser().getObjectId());
-                    }
-                })
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ParseUser>() {
+                .subscribe(new Subscriber<ChatGroups>() {
                     @Override
                     public void onCompleted() {
                         progressWheel.stopSpinning();
-                        usersRecyclerAdapter.notifyDataSetChanged();
+                        groupsRecyclerAdapter.notifyDataSetChanged();
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.d(TAG, "Exception during SignUp : " + e);
+                        Log.d(TAG, "Exception during loading groups : " + e);
                         progressWheel.stopSpinning();
-                        Toast.makeText(HomeActivity.this,
+                        Toast.makeText(GroupsActivity.this,
                                 "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onNext(ParseUser parseUser) {
-                        usersRecyclerAdapter.addData(parseUser);
+                    public void onNext(ChatGroups chatGroups) {
+                        groupsRecyclerAdapter.addData(chatGroups);
                     }
-
                 })
         );
+
     }
 
 }

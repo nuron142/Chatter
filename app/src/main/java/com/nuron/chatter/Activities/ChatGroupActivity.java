@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,12 +24,11 @@ import android.widget.Toast;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.android.Utils;
 import com.cloudinary.utils.ObjectUtils;
-import com.nuron.chatter.Adapters.ChatSingleAdapter;
-import com.nuron.chatter.Model.ChatSingle;
+import com.nuron.chatter.Adapters.ChatSingleMessageAdapter;
+import com.nuron.chatter.Model.ChatSingleMessage;
 import com.nuron.chatter.R;
 import com.parse.ParseACL;
 import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -55,9 +55,12 @@ import rx.parse.ParseObservable;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
-public class ChatActivity extends AppCompatActivity {
+/**
+ * Created by nuron on 26/12/15.
+ */
+public class ChatGroupActivity extends AppCompatActivity {
 
-    private static final String TAG = ChatActivity.class.getSimpleName();
+    private static final String TAG = ChatSingleActivity.class.getSimpleName();
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 142;
     public static final int PICK_IMAGE_ACTIVITY_REQUEST_CODE = 840;
 
@@ -77,7 +80,7 @@ public class ChatActivity extends AppCompatActivity {
     CompositeSubscription allSubscriptions;
     Subscription imageUploadSub;
     String senderId, receiveId, receiverName;
-    ChatSingleAdapter chatSingleAdapter;
+    ChatSingleMessageAdapter chatSingleMessageAdapter;
     File file;
 
     @Override
@@ -87,7 +90,7 @@ public class ChatActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         context = this;
-        receiveId = getIntent().getExtras().getString(ChatSingle.RECEIVER_ID);
+        receiveId = getIntent().getExtras().getString(ChatSingleMessage.RECEIVER_ID);
         receiverName = getIntent().getExtras().getString(LoginActivity.USER_ACCOUNT_NAME);
         senderId = ParseUser.getCurrentUser().getObjectId();
 
@@ -101,8 +104,8 @@ public class ChatActivity extends AppCompatActivity {
         chatRecyclerView.setHasFixedSize(true);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        chatSingleAdapter = new ChatSingleAdapter(this, receiveId);
-        chatRecyclerView.setAdapter(chatSingleAdapter);
+        chatSingleMessageAdapter = new ChatSingleMessageAdapter(this, receiveId);
+        chatRecyclerView.setAdapter(chatSingleMessageAdapter);
 
     }
 
@@ -140,50 +143,7 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        ChatSingle chatSingle = new ChatSingle();
-        chatSingle.setChatText(chatEditText.getText().toString());
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-        chatSingle.setSentDate(dateFormat.format(date));
-        chatSingle.setSenderId(senderId);
-        chatSingle.setReceiverId(receiveId);
-        chatSingle.setReceiverName(receiverName);
-
-        ParseACL acl = new ParseACL();
-        acl.setReadAccess(ParseUser.getCurrentUser(), true);
-        acl.setReadAccess(receiveId, true);
-        acl.setWriteAccess(ParseUser.getCurrentUser(), true);
-
-        chatSingle.setACL(acl);
-
-        chatSingleAdapter.addData(chatSingle);
-        chatSingleAdapter.notifyItemInserted(chatSingleAdapter.getItemCount());
-        chatEditText.setText("");
-
-        allSubscriptions.add(ParseObservable.save(chatSingle)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ParseObject>() {
-                    @Override
-                    public void onCompleted() {
-                        Toast.makeText(getApplicationContext(),
-                                "Successfully saved", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Toast.makeText(context,
-                                "Couldn't save. Please try again", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onNext(ParseObject parseObject) {
-
-                    }
-                })
-        );
-
+        saveChatMessage(chatEditText.getText().toString(), null);
     }
 
     @Override
@@ -221,7 +181,9 @@ public class ChatActivity extends AppCompatActivity {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = senderId + timeStamp + "_img";
 
-        file = new File(getExternalFilesDir(null), imageFileName + ".jpg");
+        file = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                imageFileName + ".jpg");
 
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
@@ -231,6 +193,12 @@ public class ChatActivity extends AppCompatActivity {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
 
             if (file.exists()) {
+
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                Uri contentUri = Uri.fromFile(file);
+                mediaScanIntent.setData(contentUri);
+                this.sendBroadcast(mediaScanIntent);
+
                 uploadImage();
             } else {
                 Toast.makeText(this, "Couldn't save picture", Toast.LENGTH_SHORT).show();
@@ -318,7 +286,7 @@ public class ChatActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(Map map) {
-                        saveImageChat((String) map.get("public_id"));
+                        saveChatMessage(null, (String) map.get("public_id"));
                     }
                 });
         allSubscriptions.add(imageUploadSub);
@@ -332,47 +300,58 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void saveImageChat(String imageID) {
+    private void saveChatMessage(String chatText1, String imageID1) {
 
-        Log.d(TAG, "Saving chatSingle image data");
+        String chatText;
+        String imageID;
 
-        ChatSingle chatSingle = new ChatSingle();
-        chatSingle.setChatText("");
+        if (imageID1 == null || imageID1.isEmpty()) {
+            imageID = "";
+        } else {
+            imageID = imageID1;
+        }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-        chatSingle.setSentDate(dateFormat.format(date));
-        chatSingle.setSenderId(senderId);
-        chatSingle.setReceiverId(receiveId);
-        chatSingle.setReceiverName(receiverName);
+        if (chatText1 == null || chatText1.isEmpty()) {
+            chatText = "";
+        } else {
+            chatText = chatText1;
+        }
 
-        chatSingle.setImageId(imageID);
+        Log.d(TAG, "Saving chat Message");
+
+        ChatSingleMessage chatSingleMessage = new ChatSingleMessage();
+        chatSingleMessage.setChatText(chatText);
+        chatSingleMessage.setSenderId(senderId);
+        chatSingleMessage.setReceiverId(receiveId);
+        chatSingleMessage.setSenderName(
+                ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
+        chatSingleMessage.setImageId(imageID);
 
         ParseACL acl = new ParseACL();
         acl.setReadAccess(ParseUser.getCurrentUser(), true);
         acl.setReadAccess(receiveId, true);
         acl.setWriteAccess(ParseUser.getCurrentUser(), true);
 
-        chatSingle.setACL(acl);
+        chatSingleMessage.setACL(acl);
 
-        allSubscriptions.add(ParseObservable.save(chatSingle)
-                .subscribe(new Subscriber<ChatSingle>() {
+        chatSingleMessageAdapter.addData(chatSingleMessage);
+        chatSingleMessageAdapter.notifyItemInserted(chatSingleMessageAdapter.getItemCount());
+        chatRecyclerView.scrollToPosition(chatSingleMessageAdapter.getItemCount() - 1);
+        chatEditText.setText("");
+
+        allSubscriptions.add(ParseObservable.save(chatSingleMessage)
+                .subscribe(new Subscriber<ChatSingleMessage>() {
                     @Override
                     public void onCompleted() {
+                        Log.d(TAG, "Chat Message saved");
                     }
 
                     @Override
                     public void onError(Throwable e) {
-
                     }
 
                     @Override
-                    public void onNext(ChatSingle chatSingle) {
-
-                        Log.d(TAG, "Saving chatSingle onNext");
-                        chatSingleAdapter.addData(chatSingle);
-                        chatSingleAdapter.notifyItemInserted(chatSingleAdapter.getItemCount());
-                        chatEditText.setText("");
+                    public void onNext(ChatSingleMessage chatSingleMessage) {
                     }
                 })
         );
@@ -382,31 +361,31 @@ public class ChatActivity extends AppCompatActivity {
 
         emptyItemsLayout.setVisibility(View.GONE);
         progressWheel.spin();
-        chatSingleAdapter.clear();
-        ParseQuery<ChatSingle> senderQuery = ParseQuery.getQuery(ChatSingle.class);
-        senderQuery.whereEqualTo(ChatSingle.SENDER_ID,
+        chatSingleMessageAdapter.clear();
+        ParseQuery<ChatSingleMessage> senderQuery = ParseQuery.getQuery(ChatSingleMessage.class);
+        senderQuery.whereEqualTo(ChatSingleMessage.SENDER_ID,
                 ParseUser.getCurrentUser().getObjectId());
-        senderQuery.whereEqualTo(ChatSingle.RECEIVER_ID, receiveId);
+        senderQuery.whereEqualTo(ChatSingleMessage.RECEIVER_ID, receiveId);
 
-        ParseQuery<ChatSingle> receiverQuery = ParseQuery.getQuery(ChatSingle.class);
-        receiverQuery.whereEqualTo(ChatSingle.SENDER_ID, receiveId);
-        receiverQuery.whereEqualTo(ChatSingle.RECEIVER_ID,
+        ParseQuery<ChatSingleMessage> receiverQuery = ParseQuery.getQuery(ChatSingleMessage.class);
+        receiverQuery.whereEqualTo(ChatSingleMessage.SENDER_ID, receiveId);
+        receiverQuery.whereEqualTo(ChatSingleMessage.RECEIVER_ID,
                 ParseUser.getCurrentUser().getObjectId());
 
-        List<ParseQuery<ChatSingle>> queries = new ArrayList<>();
+        List<ParseQuery<ChatSingleMessage>> queries = new ArrayList<>();
         queries.add(senderQuery);
         queries.add(receiverQuery);
 
-        final ParseQuery<ChatSingle> messageQuery = ParseQuery.or(queries);
+        final ParseQuery<ChatSingleMessage> messageQuery = ParseQuery.or(queries);
         messageQuery.setLimit(50);
         messageQuery.addAscendingOrder("createdAt");
 
         allSubscriptions.add(Observable.interval(0, 30, TimeUnit.SECONDS, Schedulers.newThread())
-                .map(new Func1<Long, List<ChatSingle>>() {
+                .map(new Func1<Long, List<ChatSingleMessage>>() {
                     @Override
-                    public List<ChatSingle> call(Long aLong) {
+                    public List<ChatSingleMessage> call(Long aLong) {
                         Log.d(TAG, "Starting polling");
-                        chatSingleAdapter.clear();
+                        chatSingleMessageAdapter.clear();
                         try {
                             return messageQuery.find();
                         } catch (ParseException e) {
@@ -416,7 +395,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<List<ChatSingle>>() {
+                .subscribe(new Subscriber<List<ChatSingleMessage>>() {
                     @Override
                     public void onCompleted() {
                     }
@@ -424,24 +403,24 @@ public class ChatActivity extends AppCompatActivity {
                     @Override
                     public void onError(Throwable e) {
                         Log.d(TAG, "Exception during getting messages : " + e);
-                        Toast.makeText(ChatActivity.this,
+                        Toast.makeText(ChatGroupActivity.this,
                                 "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onNext(List<ChatSingle> chatSingleList) {
-                        if (chatSingleList.size() == 0) {
+                    public void onNext(List<ChatSingleMessage> chatSingleMessageList) {
+                        if (chatSingleMessageList.size() == 0) {
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                             progressWheel.stopSpinning();
                         } else {
 
-                            for (ChatSingle chatSingle : chatSingleList) {
-                                chatSingleAdapter.addData(chatSingle);
+                            for (ChatSingleMessage chatSingleMessage : chatSingleMessageList) {
+                                chatSingleMessageAdapter.addData(chatSingleMessage);
                             }
 
                             progressWheel.stopSpinning();
-                            chatSingleAdapter.notifyDataSetChanged();
-                            chatRecyclerView.scrollToPosition(chatSingleList.size() - 1);
+                            chatSingleMessageAdapter.notifyDataSetChanged();
+                            chatRecyclerView.scrollToPosition(chatSingleMessageList.size() - 1);
                         }
                     }
 

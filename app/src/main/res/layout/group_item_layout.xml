@@ -9,7 +9,7 @@
     <android.support.v7.widget.CardView
         android:id="@+id/user_layout"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="68dp"
         android:layout_marginBottom="4dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
@@ -29,9 +29,9 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="4dp"
+                android:background="@drawable/group_circle_drawable"
                 android:padding="8dp"
-                android:background="@drawable/user_circle_drawable"
-                android:src="@drawable/ic_person_white_18dp" />
+                android:src="@drawable/ic_group_white_18dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -42,18 +42,11 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/user_name"
+                    android:id="@+id/group_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="20sp"
                     tools:text="Sunil Kumar" />
-
-                <TextView
-                    android:id="@+id/user_email"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    tools:text="sunilcrj1@outlook.com" />
 
             </LinearLayout>
 

@@ -8,18 +8,25 @@ import com.parse.ParseObject;
  */
 
 
-@ParseClassName("ChatSingle")
-public class ChatSingle extends ParseObject {
+@ParseClassName("ChatSingleMessage")
+public class ChatSingleMessage extends ParseObject {
 
     public static final String SENDER_ID = "senderId";
     public static final String RECEIVER_ID = "receiverId";
 
     private String chatText;
-    private String sentDate;
     private String senderId;
     private String receiverId;
-    private String receiverName;
     private String imageId;
+    private String senderName;
+
+    public String getSenderName() {
+        return getString("senderName");
+    }
+
+    public void setSenderName(String senderName) {
+        put("senderName", senderName);
+    }
 
     public String getChatText() {
         return getString("chatText");
@@ -27,14 +34,6 @@ public class ChatSingle extends ParseObject {
 
     public void setChatText(String chatText) {
         put("chatText", chatText);
-    }
-
-    public String getSentDate() {
-        return getString("sentDate");
-    }
-
-    public void setSentDate(String sentDate) {
-        put("sentDate", sentDate);
     }
 
     public String getSenderId() {
@@ -51,14 +50,6 @@ public class ChatSingle extends ParseObject {
 
     public void setReceiverId(String receiverId) {
         put("receiverId", receiverId);
-    }
-
-    public String getReceiverName() {
-        return getString("receiverName");
-    }
-
-    public void setReceiverName(String receiverName) {
-        put("receiverName", receiverName);
     }
 
     public String getImageId() {

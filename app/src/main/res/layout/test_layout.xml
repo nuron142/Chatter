@@ -58,18 +58,5 @@
             android:hint="Date"
             android:imeOptions="actionDone" />
 
-        <com.rengwuxian.materialedittext.MaterialEditText
-            android:id="@+id/todo_location_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_marginLeft="24dp"
-            android:layout_marginRight="24dp"
-            android:layout_marginBottom="12dp"
-            android:drawableRight="@drawable/ic_search_black"
-            android:textSize="18sp"
-            android:hint="Location"
-            android:imeOptions="actionDone" />
-
     </LinearLayout>
 </LinearLayout>
