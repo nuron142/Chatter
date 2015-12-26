@@ -111,7 +111,7 @@ public class GroupsActivity extends AppCompatActivity
     @OnClick(R.id.fab)
     public void addNewGroup() {
 
-        ChatGroup chatGroup = new ChatGroup();
+        final ChatGroup chatGroup = new ChatGroup();
         chatGroup.setGroupId(UUID.randomUUID().toString());
         chatGroup.setGroupName("Test Group");
         ParseACL groupAcl = new ParseACL();
@@ -129,11 +129,31 @@ public class GroupsActivity extends AppCompatActivity
                 ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
 
         ParseACL acl = new ParseACL();
-        acl.setReadAccess(ParseUser.getCurrentUser(), true);
+        acl.setPublicReadAccess(true);
         acl.setWriteAccess(ParseUser.getCurrentUser(), true);
         chatGroupMessage.setACL(acl);
 
-        allSubscriptions.add(ParseObservable.save(chatGroup)
+        final ParseQuery<ChatGroup> groupExistsQuery = ParseQuery.getQuery(ChatGroup.class);
+        groupExistsQuery.whereEqualTo(ChatGroup.GROUP_ID, chatGroup.getGroupId());
+        groupExistsQuery.whereEqualTo(ChatGroup.GROUP_NAME, chatGroup.getGroupName());
+
+        allSubscriptions.add(Observable.fromCallable(
+                new Callable<List<ChatGroup>>() {
+                    @Override
+                    public List<ChatGroup> call() throws Exception {
+                        return groupExistsQuery.find();
+                    }
+                })
+                .flatMap(new Func1<List<ChatGroup>, Observable<ChatGroup>>() {
+                    @Override
+                    public Observable<ChatGroup> call(List<ChatGroup> chatGroups) {
+                        if (chatGroups.size() > 0) {
+                            throw new SecurityException("Group already registered");
+                        } else {
+                            return ParseObservable.save(chatGroup);
+                        }
+                    }
+                })
                 .flatMap(new Func1<ChatGroup, Observable<ChatGroupMessage>>() {
                     @Override
                     public Observable<ChatGroupMessage> call(ChatGroup chatGroup) {
@@ -150,6 +170,11 @@ public class GroupsActivity extends AppCompatActivity
 
                     @Override
                     public void onError(Throwable e) {
+
+                        Log.d(TAG, "Exception during adding group : " + e);
+                        progressWheel.stopSpinning();
+                        Toast.makeText(GroupsActivity.this,
+                                "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -157,7 +182,6 @@ public class GroupsActivity extends AppCompatActivity
                     }
                 })
         );
-
     }
 
     @Override

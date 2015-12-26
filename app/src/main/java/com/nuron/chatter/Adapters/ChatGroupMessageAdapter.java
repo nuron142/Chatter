@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.nuron.chatter.Model.ChatSingleMessage;
+import com.nuron.chatter.Model.ChatGroupMessage;
 import com.nuron.chatter.R;
 import com.nuron.chatter.Utilities;
 import com.nuron.chatter.ViewHolders.ChatReceiveViewHolder;
@@ -21,51 +21,51 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by nuron on 24/12/15.
+ * Created by nuron on 26/12/15.
  */
-public class ChatSingleMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ChatGroupMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int VIEW_SENDER = 1;
     private static final int VIEW_RECEIVER = 2;
 
-    List<ChatSingleMessage> chatSingleMessageList;
+    List<ChatGroupMessage> chatGroupMessageList;
     Context context;
     private final static String TAG = UsersRecyclerAdapter.class.getSimpleName();
     String senderId;
     int imageWidth, imageHeight;
     RequestManager glide;
 
-    public ChatSingleMessageAdapter(Context context) {
+    public ChatGroupMessageAdapter(Context context) {
         super();
         Log.d(TAG, "UsersRecyclerAdapter is initialised ");
         this.context = context;
-        chatSingleMessageList = new ArrayList<>();
+        chatGroupMessageList = new ArrayList<>();
         this.senderId = ParseUser.getCurrentUser().getObjectId();
         this.imageWidth = context.getResources().getDimensionPixelSize(R.dimen.image_width);
         this.imageHeight = context.getResources().getDimensionPixelSize(R.dimen.image_height);
         this.glide = Glide.with(context);
     }
 
-    public void addData(ChatSingleMessage chatSingleMessage) {
-        chatSingleMessageList.add(chatSingleMessage);
+    public void addData(ChatGroupMessage chatGroupMessage) {
+        chatGroupMessageList.add(chatGroupMessage);
     }
 
     public void removeData(int position) {
-        chatSingleMessageList.remove(position);
+        chatGroupMessageList.remove(position);
     }
 
     public void clear() {
-        if (chatSingleMessageList != null) {
-            chatSingleMessageList.clear();
+        if (chatGroupMessageList != null) {
+            chatGroupMessageList.clear();
         }
     }
 
     @Override
     public int getItemViewType(int position) {
 
-        ChatSingleMessage chatSingleMessage = chatSingleMessageList.get(position);
+        ChatGroupMessage chatGroupMessage = chatGroupMessageList.get(position);
 
-        if (chatSingleMessage.getSenderId().equals(senderId)) {
+        if (chatGroupMessage.getSenderId().equals(senderId)) {
             return VIEW_SENDER;
         } else {
             return VIEW_RECEIVER;
@@ -95,26 +95,26 @@ public class ChatSingleMessageAdapter extends RecyclerView.Adapter<RecyclerView.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
 
-        final ChatSingleMessage chatSingleMessage = chatSingleMessageList.get(position);
+        final ChatGroupMessage chatGroupMessage = chatGroupMessageList.get(position);
         switch (viewHolder.getItemViewType()) {
 
             case VIEW_SENDER:
-                setUpChatSenderLayout((ChatSendViewHolder) viewHolder, chatSingleMessage);
+                setUpChatSenderLayout((ChatSendViewHolder) viewHolder, chatGroupMessage);
                 break;
 
             case VIEW_RECEIVER:
-                setUpChatReceiverLayout((ChatReceiveViewHolder) viewHolder, chatSingleMessage);
+                setUpChatReceiverLayout((ChatReceiveViewHolder) viewHolder, chatGroupMessage);
                 break;
         }
 
     }
 
     private void setUpChatReceiverLayout(ChatReceiveViewHolder chatReceiveViewHolder,
-                                         ChatSingleMessage chatSingleMessage) {
+                                         ChatGroupMessage chatGroupMessage) {
 
-        Log.d(TAG, "Receiver Account name : " + chatSingleMessage.getSenderName());
+        Log.d(TAG, "Receiver Account name : " + chatGroupMessage.getSenderName());
 
-        String imageId = chatSingleMessage.getImageId();
+        String imageId = chatGroupMessage.getImageId();
         if (imageId != null && !imageId.isEmpty()) {
 
             chatReceiveViewHolder.receiverImage.setVisibility(View.VISIBLE);
@@ -141,18 +141,18 @@ public class ChatSingleMessageAdapter extends RecyclerView.Adapter<RecyclerView.
             chatReceiveViewHolder.receiveText.setVisibility(View.VISIBLE);
             chatReceiveViewHolder.receiveUsername.setVisibility(View.VISIBLE);
 
-            chatReceiveViewHolder.receiveText.setText(chatSingleMessage.getChatText());
-            chatReceiveViewHolder.receiveUsername.setText(chatSingleMessage.getSenderName());
+            chatReceiveViewHolder.receiveText.setText(chatGroupMessage.getChatText());
+            chatReceiveViewHolder.receiveUsername.setText(chatGroupMessage.getSenderName());
         }
     }
 
     private void setUpChatSenderLayout(ChatSendViewHolder chatSendViewHolder,
-                                       ChatSingleMessage chatSingleMessage) {
+                                       ChatGroupMessage chatGroupMessage) {
 
-        Log.d(TAG, "Sender Account name : " + chatSingleMessage.getSenderName());
+        Log.d(TAG, "Sender Account name : " + chatGroupMessage.getSenderName());
 
 
-        String imageId = chatSingleMessage.getImageId();
+        String imageId = chatGroupMessage.getImageId();
         if (imageId != null && !imageId.isEmpty()) {
 
             chatSendViewHolder.sendText.setVisibility(View.GONE);
@@ -175,12 +175,13 @@ public class ChatSingleMessageAdapter extends RecyclerView.Adapter<RecyclerView.
 
             chatSendViewHolder.senderImage.setVisibility(View.GONE);
             chatSendViewHolder.sendText.setVisibility(View.VISIBLE);
-            chatSendViewHolder.sendText.setText(chatSingleMessage.getChatText());
+            chatSendViewHolder.sendText.setText(chatGroupMessage.getChatText());
         }
     }
 
     @Override
     public int getItemCount() {
-        return chatSingleMessageList.size();
+        return chatGroupMessageList.size();
     }
 }
+

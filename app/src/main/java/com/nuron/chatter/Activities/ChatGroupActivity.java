@@ -24,8 +24,8 @@ import android.widget.Toast;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.android.Utils;
 import com.cloudinary.utils.ObjectUtils;
-import com.nuron.chatter.Adapters.ChatSingleMessageAdapter;
-import com.nuron.chatter.Model.ChatSingleMessage;
+import com.nuron.chatter.Adapters.ChatGroupMessageAdapter;
+import com.nuron.chatter.Model.ChatGroupMessage;
 import com.nuron.chatter.R;
 import com.parse.ParseACL;
 import com.parse.ParseException;
@@ -36,7 +36,6 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -79,8 +78,8 @@ public class ChatGroupActivity extends AppCompatActivity {
     Context context;
     CompositeSubscription allSubscriptions;
     Subscription imageUploadSub;
-    String senderId, receiveId, receiverName;
-    ChatSingleMessageAdapter chatSingleMessageAdapter;
+    String senderId, groupId, groupName;
+    ChatGroupMessageAdapter chatGroupMessageAdapter;
     File file;
 
     @Override
@@ -90,12 +89,12 @@ public class ChatGroupActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         context = this;
-        receiveId = getIntent().getExtras().getString(ChatSingleMessage.RECEIVER_ID);
-        receiverName = getIntent().getExtras().getString(LoginActivity.USER_ACCOUNT_NAME);
+        groupId = getIntent().getExtras().getString(ChatGroupMessage.GROUP_ID);
+        groupName = getIntent().getExtras().getString(ChatGroupMessage.GROUP_NAME);
         senderId = ParseUser.getCurrentUser().getObjectId();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(receiverName);
+        toolbar.setTitle(groupName);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -104,8 +103,8 @@ public class ChatGroupActivity extends AppCompatActivity {
         chatRecyclerView.setHasFixedSize(true);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        chatSingleMessageAdapter = new ChatSingleMessageAdapter(this, receiveId);
-        chatRecyclerView.setAdapter(chatSingleMessageAdapter);
+        chatGroupMessageAdapter = new ChatGroupMessageAdapter(this);
+        chatRecyclerView.setAdapter(chatGroupMessageAdapter);
 
     }
 
@@ -152,7 +151,7 @@ public class ChatGroupActivity extends AppCompatActivity {
         if (allSubscriptions == null) {
             allSubscriptions = new CompositeSubscription();
         }
-        loadChatMessages();
+        loadChatGroupMessages();
 
     }
 
@@ -319,28 +318,27 @@ public class ChatGroupActivity extends AppCompatActivity {
 
         Log.d(TAG, "Saving chat Message");
 
-        ChatSingleMessage chatSingleMessage = new ChatSingleMessage();
-        chatSingleMessage.setChatText(chatText);
-        chatSingleMessage.setSenderId(senderId);
-        chatSingleMessage.setReceiverId(receiveId);
-        chatSingleMessage.setSenderName(
+        final ChatGroupMessage chatGroupMessage = new ChatGroupMessage();
+        chatGroupMessage.setChatText(chatText);
+        chatGroupMessage.setSenderId(senderId);
+        chatGroupMessage.setGroupId(groupId);
+        chatGroupMessage.setGroupName(groupName);
+        chatGroupMessage.setSenderName(
                 ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
-        chatSingleMessage.setImageId(imageID);
+        chatGroupMessage.setImageId(imageID);
 
         ParseACL acl = new ParseACL();
-        acl.setReadAccess(ParseUser.getCurrentUser(), true);
-        acl.setReadAccess(receiveId, true);
+        acl.setPublicReadAccess(true);
         acl.setWriteAccess(ParseUser.getCurrentUser(), true);
+        chatGroupMessage.setACL(acl);
 
-        chatSingleMessage.setACL(acl);
-
-        chatSingleMessageAdapter.addData(chatSingleMessage);
-        chatSingleMessageAdapter.notifyItemInserted(chatSingleMessageAdapter.getItemCount());
-        chatRecyclerView.scrollToPosition(chatSingleMessageAdapter.getItemCount() - 1);
+        chatGroupMessageAdapter.addData(chatGroupMessage);
+        chatGroupMessageAdapter.notifyItemInserted(chatGroupMessageAdapter.getItemCount());
+        chatRecyclerView.scrollToPosition(chatGroupMessageAdapter.getItemCount() - 1);
         chatEditText.setText("");
 
-        allSubscriptions.add(ParseObservable.save(chatSingleMessage)
-                .subscribe(new Subscriber<ChatSingleMessage>() {
+        allSubscriptions.add(ParseObservable.save(chatGroupMessage)
+                .subscribe(new Subscriber<ChatGroupMessage>() {
                     @Override
                     public void onCompleted() {
                         Log.d(TAG, "Chat Message saved");
@@ -351,41 +349,30 @@ public class ChatGroupActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(ChatSingleMessage chatSingleMessage) {
+                    public void onNext(ChatGroupMessage chatGroupMessage) {
                     }
                 })
         );
     }
 
-    public void loadChatMessages() {
+    public void loadChatGroupMessages() {
 
         emptyItemsLayout.setVisibility(View.GONE);
         progressWheel.spin();
-        chatSingleMessageAdapter.clear();
-        ParseQuery<ChatSingleMessage> senderQuery = ParseQuery.getQuery(ChatSingleMessage.class);
-        senderQuery.whereEqualTo(ChatSingleMessage.SENDER_ID,
-                ParseUser.getCurrentUser().getObjectId());
-        senderQuery.whereEqualTo(ChatSingleMessage.RECEIVER_ID, receiveId);
+        chatGroupMessageAdapter.clear();
 
-        ParseQuery<ChatSingleMessage> receiverQuery = ParseQuery.getQuery(ChatSingleMessage.class);
-        receiverQuery.whereEqualTo(ChatSingleMessage.SENDER_ID, receiveId);
-        receiverQuery.whereEqualTo(ChatSingleMessage.RECEIVER_ID,
-                ParseUser.getCurrentUser().getObjectId());
 
-        List<ParseQuery<ChatSingleMessage>> queries = new ArrayList<>();
-        queries.add(senderQuery);
-        queries.add(receiverQuery);
-
-        final ParseQuery<ChatSingleMessage> messageQuery = ParseQuery.or(queries);
+        final ParseQuery<ChatGroupMessage> messageQuery = ParseQuery.getQuery(ChatGroupMessage.class);
+        messageQuery.whereEqualTo(ChatGroupMessage.GROUP_ID, groupId);
         messageQuery.setLimit(50);
         messageQuery.addAscendingOrder("createdAt");
 
         allSubscriptions.add(Observable.interval(0, 30, TimeUnit.SECONDS, Schedulers.newThread())
-                .map(new Func1<Long, List<ChatSingleMessage>>() {
+                .map(new Func1<Long, List<ChatGroupMessage>>() {
                     @Override
-                    public List<ChatSingleMessage> call(Long aLong) {
+                    public List<ChatGroupMessage> call(Long aLong) {
                         Log.d(TAG, "Starting polling");
-                        chatSingleMessageAdapter.clear();
+                        chatGroupMessageAdapter.clear();
                         try {
                             return messageQuery.find();
                         } catch (ParseException e) {
@@ -395,7 +382,7 @@ public class ChatGroupActivity extends AppCompatActivity {
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<List<ChatSingleMessage>>() {
+                .subscribe(new Subscriber<List<ChatGroupMessage>>() {
                     @Override
                     public void onCompleted() {
                     }
@@ -408,18 +395,18 @@ public class ChatGroupActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(List<ChatSingleMessage> chatSingleMessageList) {
+                    public void onNext(List<ChatGroupMessage> chatSingleMessageList) {
                         if (chatSingleMessageList.size() == 0) {
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                             progressWheel.stopSpinning();
                         } else {
 
-                            for (ChatSingleMessage chatSingleMessage : chatSingleMessageList) {
-                                chatSingleMessageAdapter.addData(chatSingleMessage);
+                            for (ChatGroupMessage chatGroupMessage : chatSingleMessageList) {
+                                chatGroupMessageAdapter.addData(chatGroupMessage);
                             }
 
                             progressWheel.stopSpinning();
-                            chatSingleMessageAdapter.notifyDataSetChanged();
+                            chatGroupMessageAdapter.notifyDataSetChanged();
                             chatRecyclerView.scrollToPosition(chatSingleMessageList.size() - 1);
                         }
                     }

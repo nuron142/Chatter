@@ -101,7 +101,7 @@ public class ChatSingleActivity extends AppCompatActivity {
         chatRecyclerView.setHasFixedSize(true);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        chatSingleMessageAdapter = new ChatSingleMessageAdapter(this, receiveId);
+        chatSingleMessageAdapter = new ChatSingleMessageAdapter(this);
         chatRecyclerView.setAdapter(chatSingleMessageAdapter);
 
     }
