@@ -33,7 +33,7 @@
                 android:paddingEnd="2dp"
                 android:paddingTop="2dp"
                 android:gravity="center"
-                android:textColor="@color/black"
+                android:textColor="@color/fifty_percent_black"
                 android:textSize="10sp"
                 tools:text="Hello Master" />
 

@@ -149,9 +149,6 @@ public class ChatGroupMessageAdapter extends RecyclerView.Adapter<RecyclerView.V
     private void setUpChatSenderLayout(ChatSendViewHolder chatSendViewHolder,
                                        ChatGroupMessage chatGroupMessage) {
 
-        Log.d(TAG, "Sender Account name : " + chatGroupMessage.getSenderName());
-
-
         String imageId = chatGroupMessage.getImageId();
         if (imageId != null && !imageId.isEmpty()) {
 

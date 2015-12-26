@@ -59,9 +59,10 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
         final ChatGroup chatGroup = chatGroups.get(position);
 
-        viewHolder.userName.setText(chatGroup.getString(ChatGroup.GROUP_NAME));
+        viewHolder.groupName.setText(chatGroup.getGroupName());
+        viewHolder.groupDescription.setText(chatGroup.getGroupDescription());
 
-        viewHolder.userLayout.setOnClickListener(new View.OnClickListener() {
+        viewHolder.groupLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -83,10 +84,13 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
     class ViewHolder extends RecyclerView.ViewHolder {
 
         @Bind(R.id.group_name)
-        TextView userName;
+        TextView groupName;
 
-        @Bind(R.id.user_layout)
-        View userLayout;
+        @Bind(R.id.group_layout)
+        View groupLayout;
+
+        @Bind(R.id.group_description)
+        TextView groupDescription;
 
         public ViewHolder(View itemView) {
             super(itemView);

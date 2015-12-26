@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -51,6 +52,9 @@ public class HomeActivity extends AppCompatActivity
     @Bind(R.id.progress_wheel)
     ProgressWheel progressWheel;
 
+    @Bind(R.id.swipeRefreshLayout)
+    SwipeRefreshLayout swipeRefreshLayout;
+
     UsersRecyclerAdapter usersRecyclerAdapter;
     CompositeSubscription allSubscriptions;
 
@@ -69,12 +73,31 @@ public class HomeActivity extends AppCompatActivity
         usersRecyclerAdapter = new UsersRecyclerAdapter(this);
         recyclerView.setAdapter(usersRecyclerAdapter);
 
+
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadUsers();
+            }
+        });
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle =
                 new ActionBarDrawerToggle(this, drawer, toolbar,
                         R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
+
+        setUpNavigationView();
+    }
+
+    @OnClick(R.id.fab)
+    public void addChatUser() {
+
+    }
+
+    public void setUpNavigationView() {
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -94,11 +117,6 @@ public class HomeActivity extends AppCompatActivity
                 userEmailTextView.setText(userEmail);
             }
         }
-    }
-
-    @OnClick(R.id.fab)
-    public void addChatUser() {
-
     }
 
 
@@ -190,6 +208,7 @@ public class HomeActivity extends AppCompatActivity
 
     private void loadUsers() {
 
+        emptyItemsLayout.setVisibility(View.GONE);
         usersRecyclerAdapter.clear();
         allSubscriptions.add(Observable.fromCallable(
                 new Callable<List<ParseUser>>() {
@@ -217,7 +236,19 @@ public class HomeActivity extends AppCompatActivity
                 .subscribe(new Subscriber<ParseUser>() {
                     @Override
                     public void onCompleted() {
-                        progressWheel.stopSpinning();
+
+                        if (usersRecyclerAdapter.getItemCount() == 0) {
+                            emptyItemsLayout.setVisibility(View.VISIBLE);
+                        } else {
+                            emptyItemsLayout.setVisibility(View.GONE);
+                        }
+
+                        if (!swipeRefreshLayout.isRefreshing()) {
+                            progressWheel.stopSpinning();
+                        } else {
+                            swipeRefreshLayout.setRefreshing(false);
+                        }
+
                         usersRecyclerAdapter.notifyDataSetChanged();
                     }
 

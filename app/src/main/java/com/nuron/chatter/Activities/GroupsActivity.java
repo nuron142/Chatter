@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,16 +19,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nuron.chatter.Adapters.GroupsRecyclerAdapter;
+import com.nuron.chatter.Fragments.CreateGroupFragment;
 import com.nuron.chatter.Model.ChatGroup;
-import com.nuron.chatter.Model.ChatGroupMessage;
 import com.nuron.chatter.R;
-import com.parse.ParseACL;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import butterknife.Bind;
@@ -58,8 +57,15 @@ public class GroupsActivity extends AppCompatActivity
     @Bind(R.id.progress_wheel)
     ProgressWheel progressWheel;
 
+    @Bind(R.id.drawer_layout)
+    DrawerLayout drawer;
+
+    @Bind(R.id.swipeRefreshLayout)
+    SwipeRefreshLayout swipeRefreshLayout;
+
     GroupsRecyclerAdapter groupsRecyclerAdapter;
     CompositeSubscription allSubscriptions;
+    ActionBarDrawerToggle drawerToggle;
 
     String senderId, groupId, groupName;
     Context context;
@@ -67,7 +73,7 @@ public class GroupsActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_groups);
 
         ButterKnife.bind(this);
         context = this;
@@ -81,12 +87,24 @@ public class GroupsActivity extends AppCompatActivity
         groupsRecyclerAdapter = new GroupsRecyclerAdapter(this);
         recyclerView.setAdapter(groupsRecyclerAdapter);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle =
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadChatGroups();
+            }
+        });
+
+        drawerToggle =
                 new ActionBarDrawerToggle(this, drawer, toolbar,
                         R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        drawer.setDrawerListener(drawerToggle);
+        drawerToggle.syncState();
+
+        setUpNavigationView();
+    }
+
+    public void setUpNavigationView(){
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -110,78 +128,44 @@ public class GroupsActivity extends AppCompatActivity
 
     @OnClick(R.id.fab)
     public void addNewGroup() {
+        showAddGroupFragment();
+    }
 
-        final ChatGroup chatGroup = new ChatGroup();
-        chatGroup.setGroupId(UUID.randomUUID().toString());
-        chatGroup.setGroupName("Test Group");
-        ParseACL groupAcl = new ParseACL();
-        groupAcl.setPublicReadAccess(true);
-        groupAcl.setWriteAccess(ParseUser.getCurrentUser(), true);
-        chatGroup.setACL(groupAcl);
+    public boolean handleBackPressed() {
 
-        final ChatGroupMessage chatGroupMessage = new ChatGroupMessage();
-        chatGroupMessage.setChatText("Group created by " +
-                ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
-        chatGroupMessage.setSenderId(ParseUser.getCurrentUser().getObjectId());
-        chatGroupMessage.setGroupId(chatGroup.getGroupId());
-        chatGroupMessage.setGroupName(chatGroup.getGroupName());
-        chatGroupMessage.setSenderName(
-                ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
+        CreateGroupFragment createGroupFragment =
+                (CreateGroupFragment) getSupportFragmentManager().
+                        findFragmentByTag(CreateGroupFragment.TAG);
 
-        ParseACL acl = new ParseACL();
-        acl.setPublicReadAccess(true);
-        acl.setWriteAccess(ParseUser.getCurrentUser(), true);
-        chatGroupMessage.setACL(acl);
+        if (createGroupFragment == null) {
+            return false;
+        } else {
 
-        final ParseQuery<ChatGroup> groupExistsQuery = ParseQuery.getQuery(ChatGroup.class);
-        groupExistsQuery.whereEqualTo(ChatGroup.GROUP_ID, chatGroup.getGroupId());
-        groupExistsQuery.whereEqualTo(ChatGroup.GROUP_NAME, chatGroup.getGroupName());
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Groups");
+            }
 
-        allSubscriptions.add(Observable.fromCallable(
-                new Callable<List<ChatGroup>>() {
-                    @Override
-                    public List<ChatGroup> call() throws Exception {
-                        return groupExistsQuery.find();
-                    }
-                })
-                .flatMap(new Func1<List<ChatGroup>, Observable<ChatGroup>>() {
-                    @Override
-                    public Observable<ChatGroup> call(List<ChatGroup> chatGroups) {
-                        if (chatGroups.size() > 0) {
-                            throw new SecurityException("Group already registered");
-                        } else {
-                            return ParseObservable.save(chatGroup);
-                        }
-                    }
-                })
-                .flatMap(new Func1<ChatGroup, Observable<ChatGroupMessage>>() {
-                    @Override
-                    public Observable<ChatGroupMessage> call(ChatGroup chatGroup) {
-                        return ParseObservable.save(chatGroupMessage);
-                    }
-                })
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ChatGroupMessage>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "New Chat group saved");
-                    }
+            getSupportFragmentManager().beginTransaction().remove(createGroupFragment).commit();
+            getSupportFragmentManager().executePendingTransactions();
 
-                    @Override
-                    public void onError(Throwable e) {
+            setDrawerState(true);
+            return true;
+        }
+    }
 
-                        Log.d(TAG, "Exception during adding group : " + e);
-                        progressWheel.stopSpinning();
-                        Toast.makeText(GroupsActivity.this,
-                                "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+    private void showAddGroupFragment() {
 
-                    @Override
-                    public void onNext(ChatGroupMessage chatSingleMessage) {
-                    }
-                })
-        );
+        CreateGroupFragment createGroupFragment = new CreateGroupFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, createGroupFragment, CreateGroupFragment.TAG)
+                .commit();
+
+        setDrawerState(false);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Create Group");
+        }
+        getFragmentManager().executePendingTransactions();
     }
 
     @Override
@@ -203,11 +187,13 @@ public class GroupsActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+
+        if (!handleBackPressed()) {
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawer(GravityCompat.START);
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
@@ -228,7 +214,6 @@ public class GroupsActivity extends AppCompatActivity
     }
 
     private void launchHomeActivity() {
-        Log.d(TAG, "Launching home activity");
         Intent intent = new Intent(GroupsActivity.this, HomeActivity.class);
         startActivity(intent);
         finish();
@@ -263,13 +248,16 @@ public class GroupsActivity extends AppCompatActivity
         );
     }
 
-
-    private void loadChatGroups() {
+    public void loadChatGroups() {
 
         final ParseQuery<ChatGroup> groupsQuery = ParseQuery.getQuery(ChatGroup.class);
         groupsQuery.addDescendingOrder(ChatGroup.UPDATED_AT);
 
-        progressWheel.spin();
+
+        emptyItemsLayout.setVisibility(View.GONE);
+        if(!swipeRefreshLayout.isRefreshing()){
+            progressWheel.spin();
+        }
         groupsRecyclerAdapter.clear();
 
         allSubscriptions.add(Observable.fromCallable(
@@ -288,7 +276,17 @@ public class GroupsActivity extends AppCompatActivity
                 .subscribe(new Subscriber<ChatGroup>() {
                     @Override
                     public void onCompleted() {
-                        progressWheel.stopSpinning();
+                        if (groupsRecyclerAdapter.getItemCount() == 0) {
+                            emptyItemsLayout.setVisibility(View.VISIBLE);
+                        } else {
+                            emptyItemsLayout.setVisibility(View.GONE);
+                        }
+                        if(!swipeRefreshLayout.isRefreshing()){
+                            progressWheel.stopSpinning();
+                        } else {
+                            swipeRefreshLayout.setRefreshing(false);
+                        }
+
                         groupsRecyclerAdapter.notifyDataSetChanged();
                     }
 
@@ -307,6 +305,32 @@ public class GroupsActivity extends AppCompatActivity
                 })
         );
 
+    }
+
+    public void setDrawerState(boolean isEnabled) {
+
+        if (isEnabled) {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            drawerToggle.setDrawerIndicatorEnabled(true);
+            drawerToggle.syncState();
+
+        } else {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            drawerToggle.syncState();
+
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                drawerToggle.setDrawerIndicatorEnabled(false);
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+
+            drawerToggle.setToolbarNavigationClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    handleBackPressed();
+                }
+            });
+        }
     }
 
 }

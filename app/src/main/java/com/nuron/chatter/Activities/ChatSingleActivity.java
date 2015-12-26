@@ -140,6 +140,7 @@ public class ChatSingleActivity extends AppCompatActivity {
             return;
         }
 
+        emptyItemsLayout.setVisibility(View.GONE);
         saveChatMessage(chatEditText.getText().toString(), null);
     }
 
@@ -384,6 +385,8 @@ public class ChatSingleActivity extends AppCompatActivity {
                     @Override
                     public List<ChatSingleMessage> call(Long aLong) {
                         Log.d(TAG, "Starting polling");
+
+                        emptyItemsLayout.setVisibility(View.GONE);
                         chatSingleMessageAdapter.clear();
                         try {
                             return messageQuery.find();

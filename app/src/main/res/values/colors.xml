@@ -7,6 +7,7 @@
     <color name="white">#FFFFFF</color>
     <color name="fifteen_percent_white">#26FFFFFF</color>
     <color name="fifty_percent_white">#80FFFFFF</color>
+    <color name="eighty_percent_white">#CCFFFFFF</color>
     <color name="green">#00FF00</color>
     <color name="half_opacity_white">#80FFFFFF</color>
     <color name="black">#000000</color>

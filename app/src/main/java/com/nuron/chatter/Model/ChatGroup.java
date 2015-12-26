@@ -16,6 +16,26 @@ public class ChatGroup extends ParseObject {
 
     private String groupId;
     private String groupName;
+    private String groupDescription;
+    private String groupCreateBy;
+
+
+    public String getGroupCreateBy() {
+        return getString("groupCreateBy");
+    }
+
+    public void setGroupCreateBy(String groupCreateBy) {
+        put("groupCreateBy", groupCreateBy);
+    }
+
+    public String getGroupDescription() {
+        return getString("groupDescription");
+    }
+
+    public void setGroupDescription(String groupDescription) {
+        put("groupDescription", groupDescription);
+    }
+
 
     public String getGroupName() {
         return getString("groupName");

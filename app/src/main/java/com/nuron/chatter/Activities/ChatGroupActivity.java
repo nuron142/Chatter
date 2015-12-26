@@ -372,6 +372,8 @@ public class ChatGroupActivity extends AppCompatActivity {
                     @Override
                     public List<ChatGroupMessage> call(Long aLong) {
                         Log.d(TAG, "Starting polling");
+
+                        emptyItemsLayout.setVisibility(View.GONE);
                         chatGroupMessageAdapter.clear();
                         try {
                             return messageQuery.find();

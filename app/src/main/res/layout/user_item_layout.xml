@@ -15,7 +15,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         card_view:cardCornerRadius="0dp"
-        card_view:cardElevation="2dp">
+        card_view:cardElevation="1dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -29,7 +29,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="4dp"
-                android:padding="8dp"
+                android:padding="10dp"
                 android:background="@drawable/user_circle_drawable"
                 android:src="@drawable/ic_person_white_18dp" />
 
@@ -45,14 +45,15 @@
                     android:id="@+id/user_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    tools:text="Sunil Kumar" />
+                    android:textSize="18sp"
+                    tools:text="Sunil Kumar"/>
 
                 <TextView
                     android:id="@+id/user_email"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:textSize="12sp"
                     tools:text="sunilcrj1@outlook.com" />
 
             </LinearLayout>
