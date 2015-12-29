@@ -1,7 +1,6 @@
 package com.nuron.chatter.Fragments;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -40,11 +39,11 @@ import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
 /**
- * Created by nuron on 26/12/15.
+ * Created by nuron on 29/12/15.
  */
-public class CreateGroupFragment extends Fragment {
+public class FriendsFragment extends Fragment {
 
-    public static final String TAG = CreateGroupFragment.class.getSimpleName();
+    public static final String TAG = FriendsFragment.class.getSimpleName();
 
     @Bind(R.id.group_name)
     MaterialEditText groupName;
@@ -58,11 +57,10 @@ public class CreateGroupFragment extends Fragment {
     @Bind(R.id.group_creation_date)
     TextView groupCreationDate;
 
-    private Context context;
     CompositeSubscription allSubscriptions;
     String currentUser;
 
-    public CreateGroupFragment() {
+    public FriendsFragment() {
     }
 
     @Override

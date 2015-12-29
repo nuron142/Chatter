@@ -149,9 +149,6 @@ public class ChatSingleMessageAdapter extends RecyclerView.Adapter<RecyclerView.
     private void setUpChatSenderLayout(ChatSendViewHolder chatSendViewHolder,
                                        ChatSingleMessage chatSingleMessage) {
 
-        Log.d(TAG, "Sender Account name : " + chatSingleMessage.getSenderName());
-
-
         String imageId = chatSingleMessage.getImageId();
         if (imageId != null && !imageId.isEmpty()) {
 

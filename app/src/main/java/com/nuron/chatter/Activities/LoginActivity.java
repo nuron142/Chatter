@@ -41,6 +41,7 @@ public class LoginActivity extends AppCompatActivity {
     private final static String TAG = LoginActivity.class.getSimpleName();
     public final static String USER_ACCOUNT_NAME = "account_name";
     public final static String USER_PERSONAL_EMAIL = "personal_email";
+    public final static String USER_ACCOUNT_NAME_LOWER_CASE = "account_name_lower_case";
 
 
     @Bind(R.id.login_email_text)
@@ -166,11 +167,12 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "Initiating sign up process");
 
         final ParseUser user = new ParseUser();
-        user.setUsername(loginEmail.getText().toString());
+        user.setUsername(loginEmail.getText().toString().toLowerCase());
         user.setPassword(loginPass.getText().toString());
-        user.setEmail(loginEmail.getText().toString());
+        user.setEmail(loginEmail.getText().toString().toLowerCase());
         user.put(USER_PERSONAL_EMAIL, loginEmail.getText().toString());
         user.put(USER_ACCOUNT_NAME, loginName.getText().toString());
+        user.put(USER_ACCOUNT_NAME_LOWER_CASE, loginName.getText().toString().toLowerCase());
 
         allSubscriptions.add(Observable.fromCallable(
                 new Callable<Void>() {
@@ -325,7 +327,6 @@ public class LoginActivity extends AppCompatActivity {
     public void onBackPressed() {
 
         if (progressWheel.isSpinning()) {
-            Log.d(TAG, "progressWheel.isSpinning() is true");
             progressWheel.stopSpinning();
 
             if (allSubscriptions != null && allSubscriptions.isUnsubscribed()) {

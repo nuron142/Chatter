@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,7 +11,6 @@
         android:id="@+id/add_tem_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/toolbar"
         android:animateLayoutChanges="true">
 
         <android.support.percent.PercentRelativeLayout
@@ -61,14 +60,13 @@
             android:orientation="vertical"
             app:layout_heightPercent="60%">
 
-
             <com.rengwuxian.materialedittext.MaterialEditText
                 android:id="@+id/group_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="24dp"
                 android:layout_marginRight="24dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="48dp"
                 android:hint="Description"
                 android:inputType="textCapSentences"
                 tools:text="Hello"
@@ -112,9 +110,9 @@
         android:id="@+id/create_group_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        app:layout_marginTopPercent="35%"
         android:layout_alignParentEnd="true"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_done_white_18dp" />
 
-</RelativeLayout>
+</android.support.percent.PercentRelativeLayout>

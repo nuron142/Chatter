@@ -4,7 +4,8 @@
     xmlns:card_view="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/activity_grey_background">
 
     <android.support.v7.widget.CardView
         android:id="@+id/card_search_view"
@@ -38,12 +39,12 @@
                     android:src="@drawable/ic_arrow_back_black_24dp" />
 
                 <EditText
-                    android:id="@+id/search_location_edit_text"
+                    android:id="@+id/search_users_edit_text"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
                     android:layout_weight="1"
-                    android:hint="Search Location"
+                    android:hint="Search by Name or Email"
                     android:imeOptions="actionDone"
                     android:inputType="textNoSuggestions"
                     android:padding="0dp"
@@ -79,20 +80,32 @@
                 android:layout_marginStart="12dp"
                 android:gravity="center_vertical"
                 android:padding="0dp"
-                android:text="10 results found for 'San'"
+                android:text="10 results found for 'Liara'"
                 android:textColor="@color/seventy_percent_black"
                 android:textSize="14sp"
                 android:theme="@style/SearchEditTextTheme"
-                android:visibility="gone" />
+                android:visibility="visible" />
 
         </LinearLayout>
     </android.support.v7.widget.CardView>
 
+
+    <com.pnikosis.materialishprogress.ProgressWheel
+        android:id="@+id/progress_wheel"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/card_search_view"
+        android:layout_marginTop="8dp"
+        app:matProg_barColor="#5588FF"
+        app:matProg_progressIndeterminate="true"
+        android:visibility="visible"/>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/card_search_view"
-        android:paddingTop="12dp">
+        android:layout_below="@+id/progress_wheel"
+        android:layout_marginTop="4dp">
 
         <TextView
             android:id="@+id/empty_items_layout"
@@ -105,23 +118,18 @@
             android:visibility="gone" />
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view"
+            android:id="@+id/users_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <!--<android.support.v7.widget.RecyclerView-->
-            <!--android:id="@+id/search_results_recycler_view"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent" />-->
-
-        <com.pnikosis.materialishprogress.ProgressWheel
-            android:id="@+id/progress_wheel"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_centerInParent="true"
-            android:layout_marginTop="48dp"
-            app:matProg_barColor="#5588FF"
-            app:matProg_progressIndeterminate="true" />
+        <!--<com.pnikosis.materialishprogress.ProgressWheel-->
+            <!--android:id="@+id/progress_wheel"-->
+            <!--android:layout_width="30dp"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:layout_centerHorizontal="true"-->
+            <!--android:layout_marginTop="48dp"-->
+            <!--app:matProg_barColor="#5588FF"-->
+            <!--app:matProg_progressIndeterminate="true" />-->
 
     </RelativeLayout>
 

@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nuron.chatter.Adapters.UsersRecyclerAdapter;
+import com.nuron.chatter.Fragments.SearchAndAddFriendFragment;
 import com.nuron.chatter.R;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -55,8 +56,16 @@ public class HomeActivity extends AppCompatActivity
     @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout swipeRefreshLayout;
 
+    @Bind(R.id.drawer_layout)
+    DrawerLayout drawer;
+
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+
     UsersRecyclerAdapter usersRecyclerAdapter;
     CompositeSubscription allSubscriptions;
+
+    ActionBarDrawerToggle drawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +73,7 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
 
         ButterKnife.bind(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         recyclerView.setHasFixedSize(true);
@@ -82,19 +91,29 @@ public class HomeActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle =
+        drawerToggle =
                 new ActionBarDrawerToggle(this, drawer, toolbar,
                         R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        drawer.setDrawerListener(drawerToggle);
+        drawerToggle.syncState();
 
         setUpNavigationView();
     }
 
-    @OnClick(R.id.fab)
-    public void addChatUser() {
+    @OnClick(R.id.search_and_add_users)
+    public void searchAndAddUser() {
+        SearchAndAddFriendFragment createGroupFragment = new SearchAndAddFriendFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, createGroupFragment, SearchAndAddFriendFragment.TAG)
+                .commit();
 
+        setDrawerState(false);
+        setToolbarState(false, null);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Search");
+        }
+        getFragmentManager().executePendingTransactions();
     }
 
     public void setUpNavigationView() {
@@ -139,11 +158,12 @@ public class HomeActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+        if (!handleBackPressed()) {
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawer(GravityCompat.START);
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
@@ -204,7 +224,6 @@ public class HomeActivity extends AppCompatActivity
                 })
         );
     }
-
 
     private void loadUsers() {
 
@@ -267,6 +286,65 @@ public class HomeActivity extends AppCompatActivity
 
                 })
         );
+    }
+
+    public boolean handleBackPressed() {
+
+        SearchAndAddFriendFragment searchAndAddFriendFragment =
+                (SearchAndAddFriendFragment) getSupportFragmentManager().
+                        findFragmentByTag(SearchAndAddFriendFragment.TAG);
+
+        if (searchAndAddFriendFragment == null) {
+            return false;
+        } else {
+
+            getSupportFragmentManager().beginTransaction()
+                    .remove(searchAndAddFriendFragment).commit();
+            getSupportFragmentManager().executePendingTransactions();
+
+            setDrawerState(true);
+            setToolbarState(true, "Chatter");
+            return true;
+        }
+    }
+
+    public void setDrawerState(boolean isEnabled) {
+
+        if (isEnabled) {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            drawerToggle.setDrawerIndicatorEnabled(true);
+            drawerToggle.syncState();
+
+        } else {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            drawerToggle.syncState();
+
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                drawerToggle.setDrawerIndicatorEnabled(false);
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+
+            drawerToggle.setToolbarNavigationClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    handleBackPressed();
+                }
+            });
+        }
+    }
+
+    private void setToolbarState(boolean isEnabled, String title) {
+
+        if (getSupportActionBar() != null) {
+
+            if (isEnabled) {
+                getSupportActionBar().setTitle(title);
+                getSupportActionBar().show();
+            } else {
+                getSupportActionBar().hide();
+            }
+        }
     }
 
 }

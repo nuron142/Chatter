@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
+    <color name="activity_grey_background">#F1F1F2</color>
+
     <color name="white">#FFFFFF</color>
     <color name="fifteen_percent_white">#26FFFFFF</color>
     <color name="fifty_percent_white">#80FFFFFF</color>
