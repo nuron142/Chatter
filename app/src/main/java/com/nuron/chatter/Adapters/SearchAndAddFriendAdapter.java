@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.nuron.chatter.Activities.LoginActivity;
+import com.nuron.chatter.Fragments.SearchAndAddFriendFragment;
 import com.nuron.chatter.R;
 import com.parse.ParseUser;
 
@@ -21,13 +22,17 @@ import butterknife.ButterKnife;
  * Created by nuron on 29/12/15.
  */
 public class SearchAndAddFriendAdapter extends RecyclerView.Adapter<SearchAndAddFriendAdapter.ViewHolder> {
-    List<ParseUser> parseUsers;
-    Context context;
+
     private final static String TAG = SearchAndAddFriendAdapter.class.getSimpleName();
 
-    public SearchAndAddFriendAdapter(Context context) {
+    List<ParseUser> parseUsers;
+    Context context;
+    SearchAndAddFriendFragment searchAndAddFriendFragment;
+
+    public SearchAndAddFriendAdapter(Context context, SearchAndAddFriendFragment fragment) {
         super();
         this.context = context;
+        this.searchAndAddFriendFragment = fragment;
         parseUsers = new ArrayList<>();
     }
 
@@ -43,6 +48,14 @@ public class SearchAndAddFriendAdapter extends RecyclerView.Adapter<SearchAndAdd
         if (parseUsers != null) {
             parseUsers.clear();
         }
+    }
+
+    public ParseUser getItemAtPos(int position) {
+        if (parseUsers != null) {
+            return parseUsers.get(position);
+        }
+
+        return null;
     }
 
     @Override
@@ -63,12 +76,7 @@ public class SearchAndAddFriendAdapter extends RecyclerView.Adapter<SearchAndAdd
         viewHolder.addFriendLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-//                Intent intent = new Intent(context, ChatSingleActivity.class);
-//                intent.putExtra(ChatSingleMessage.RECEIVER_ID, parseUser.getObjectId());
-//                intent.putExtra(LoginActivity.USER_ACCOUNT_NAME,
-//                        parseUser.getString(LoginActivity.USER_ACCOUNT_NAME));
-//                context.startActivity(intent);
+                searchAndAddFriendFragment.addFriend(position);
             }
         });
 

@@ -17,7 +17,9 @@ import com.jakewharton.rxbinding.widget.TextViewTextChangeEvent;
 import com.nuron.chatter.Activities.HomeActivity;
 import com.nuron.chatter.Activities.LoginActivity;
 import com.nuron.chatter.Adapters.SearchAndAddFriendAdapter;
+import com.nuron.chatter.Model.ParseFriend;
 import com.nuron.chatter.R;
+import com.parse.ParseACL;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -37,6 +39,7 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func0;
 import rx.functions.Func1;
+import rx.parse.ParseObservable;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -87,7 +90,7 @@ public class SearchAndAddFriendFragment extends Fragment {
         usersRecyclerView.setHasFixedSize(true);
         usersRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        searchAndAddFriendAdapter = new SearchAndAddFriendAdapter(getActivity());
+        searchAndAddFriendAdapter = new SearchAndAddFriendAdapter(getActivity(), this);
         usersRecyclerView.setAdapter(searchAndAddFriendAdapter);
 
         return rootView;
@@ -336,4 +339,54 @@ public class SearchAndAddFriendFragment extends Fragment {
         allSubscriptions.add(searchQuerySub);
     }
 
+
+    public void addFriend(int position) {
+
+        ParseUser friendUser = searchAndAddFriendAdapter.getItemAtPos(position);
+        if (friendUser != null) {
+
+            ParseUser currentUser = ParseUser.getCurrentUser();
+
+            ParseFriend parseFriend = new ParseFriend();
+
+            parseFriend.setUserId(currentUser.getObjectId());
+            parseFriend.setUserName(currentUser.getString(LoginActivity.USER_ACCOUNT_NAME));
+            parseFriend.setUserNameLowercase(currentUser.
+                    getString(LoginActivity.USER_ACCOUNT_NAME).toLowerCase());
+
+
+            parseFriend.setFriendId(friendUser.getObjectId());
+            parseFriend.setFriendName(friendUser.getString(LoginActivity.USER_ACCOUNT_NAME));
+            parseFriend.setFriendNameLowerCase(friendUser.
+                    getString(LoginActivity.USER_ACCOUNT_NAME).toLowerCase());
+
+
+            ParseACL acl = new ParseACL();
+            acl.setReadAccess(ParseUser.getCurrentUser(), true);
+            acl.setReadAccess(friendUser.getObjectId(), true);
+            acl.setWriteAccess(ParseUser.getCurrentUser(), true);
+            acl.setWriteAccess(friendUser.getObjectId(), true);
+
+            parseFriend.setACL(acl);
+
+            allSubscriptions.add(ParseObservable.save(parseFriend)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<ParseFriend>() {
+                        @Override
+                        public void onCompleted() {
+                            Log.d(TAG, "ParseFriend added");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                        }
+
+                        @Override
+                        public void onNext(ParseFriend parseFriend) {
+                        }
+                    })
+            );
+        }
+    }
 }
