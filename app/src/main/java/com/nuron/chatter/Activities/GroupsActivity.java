@@ -1,6 +1,5 @@
 package com.nuron.chatter.Activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -67,16 +66,11 @@ public class GroupsActivity extends AppCompatActivity
     CompositeSubscription allSubscriptions;
     ActionBarDrawerToggle drawerToggle;
 
-    String senderId, groupId, groupName;
-    Context context;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_groups);
-
         ButterKnife.bind(this);
-        context = this;
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -288,6 +282,7 @@ public class GroupsActivity extends AppCompatActivity
                         }
 
                         groupsRecyclerAdapter.notifyDataSetChanged();
+
                     }
 
                     @Override

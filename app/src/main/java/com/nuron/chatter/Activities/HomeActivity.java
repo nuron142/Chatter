@@ -3,6 +3,7 @@ package com.nuron.chatter.Activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -62,6 +63,9 @@ public class HomeActivity extends AppCompatActivity
     @Bind(R.id.toolbar)
     Toolbar toolbar;
 
+    @Bind(R.id.search_and_add_users)
+    FloatingActionButton floatingActionButton;
+
     UsersRecyclerAdapter usersRecyclerAdapter;
     CompositeSubscription allSubscriptions;
 
@@ -81,6 +85,7 @@ public class HomeActivity extends AppCompatActivity
 
         usersRecyclerAdapter = new UsersRecyclerAdapter(this);
         recyclerView.setAdapter(usersRecyclerAdapter);
+        recyclerView.setHasFixedSize(true);
 
 
         swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
@@ -113,6 +118,8 @@ public class HomeActivity extends AppCompatActivity
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Search");
         }
+
+        floatingActionButton.hide();
         getFragmentManager().executePendingTransactions();
     }
 
@@ -184,7 +191,7 @@ public class HomeActivity extends AppCompatActivity
                 public void run() {
                     launchGroupsActivity();
                 }
-            }, 300);
+            }, 200);
         }
         return true;
     }
@@ -304,6 +311,7 @@ public class HomeActivity extends AppCompatActivity
 
             setDrawerState(true);
             setToolbarState(true, "Chatter");
+            floatingActionButton.show();
             return true;
         }
     }

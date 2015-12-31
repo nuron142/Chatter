@@ -4,8 +4,8 @@
     xmlns:card_view="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/activity_grey_background">
+    android:background="@color/activity_grey_background"
+    android:orientation="vertical">
 
     <android.support.v7.widget.CardView
         android:id="@+id/card_search_view"
@@ -75,7 +75,7 @@
             <TextView
                 android:id="@+id/search_result_text"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="36dp"
                 android:layout_marginLeft="12dp"
                 android:layout_marginStart="12dp"
                 android:gravity="center_vertical"
@@ -94,24 +94,24 @@
         android:id="@+id/progress_wheel"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_centerHorizontal="true"
         android:layout_below="@+id/card_search_view"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="8dp"
+        android:visibility="visible"
         app:matProg_barColor="#5588FF"
-        app:matProg_progressIndeterminate="true"
-        android:visibility="visible"/>
+        app:matProg_progressIndeterminate="true" />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/progress_wheel"
-        android:layout_marginTop="4dp">
+        android:layout_below="@+id/progress_wheel">
 
         <TextView
             android:id="@+id/empty_items_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:layout_marginTop="4dp"
             android:gravity="center"
             android:text="Couldn't find any users  :)"
             android:textSize="18sp"
@@ -121,15 +121,6 @@
             android:id="@+id/users_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
-        <!--<com.pnikosis.materialishprogress.ProgressWheel-->
-            <!--android:id="@+id/progress_wheel"-->
-            <!--android:layout_width="30dp"-->
-            <!--android:layout_height="30dp"-->
-            <!--android:layout_centerHorizontal="true"-->
-            <!--android:layout_marginTop="48dp"-->
-            <!--app:matProg_barColor="#5588FF"-->
-            <!--app:matProg_progressIndeterminate="true" />-->
 
     </RelativeLayout>
 

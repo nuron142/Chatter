@@ -375,7 +375,7 @@ public class ChatSingleActivity extends AppCompatActivity {
         messageQuery.setLimit(50);
         messageQuery.addAscendingOrder("createdAt");
 
-        allSubscriptions.add(Observable.interval(0, 30, TimeUnit.SECONDS, Schedulers.newThread())
+        allSubscriptions.add(Observable.interval(0, 20, TimeUnit.SECONDS, Schedulers.newThread())
                 .map(new Func1<Long, List<ChatSingleMessage>>() {
                     @Override
                     public List<ChatSingleMessage> call(Long aLong) {

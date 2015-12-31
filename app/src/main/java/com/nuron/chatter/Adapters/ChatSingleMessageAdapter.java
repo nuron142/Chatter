@@ -2,7 +2,6 @@ package com.nuron.chatter.Adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +36,6 @@ public class ChatSingleMessageAdapter extends RecyclerView.Adapter<RecyclerView.
 
     public ChatSingleMessageAdapter(Context context) {
         super();
-        Log.d(TAG, "UsersRecyclerAdapter is initialised ");
         this.context = context;
         chatSingleMessageList = new ArrayList<>();
         this.senderId = ParseUser.getCurrentUser().getObjectId();
@@ -111,8 +109,6 @@ public class ChatSingleMessageAdapter extends RecyclerView.Adapter<RecyclerView.
 
     private void setUpChatReceiverLayout(ChatReceiveViewHolder chatReceiveViewHolder,
                                          ChatSingleMessage chatSingleMessage) {
-
-        Log.d(TAG, "Receiver Account name : " + chatSingleMessage.getSenderName());
 
         String imageId = chatSingleMessage.getImageId();
         if (imageId != null && !imageId.isEmpty()) {

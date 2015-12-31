@@ -92,6 +92,8 @@ public class SearchAndAddFriendFragment extends Fragment {
         searchAddFriendAdapter = new SearchAddFriendAdapter(getActivity(), this);
         usersRecyclerView.setAdapter(searchAddFriendAdapter);
 
+        searchTextListener();
+
         return rootView;
     }
 
@@ -102,7 +104,6 @@ public class SearchAndAddFriendFragment extends Fragment {
             allSubscriptions = new CompositeSubscription();
         }
 
-        searchTextListener();
         loadAllUsers();
     }
 
@@ -233,6 +234,10 @@ public class SearchAndAddFriendFragment extends Fragment {
     }
 
     private void searchTextListener() {
+
+        if (allSubscriptions == null) {
+            allSubscriptions = new CompositeSubscription();
+        }
 
         allSubscriptions.add(RxTextView.textChangeEvents(searchUsersText)
                 .debounce(100, TimeUnit.MILLISECONDS)
