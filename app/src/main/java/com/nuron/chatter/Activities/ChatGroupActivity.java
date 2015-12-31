@@ -34,11 +34,11 @@ import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
@@ -48,7 +48,6 @@ import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.parse.ParseObservable;
 import rx.schedulers.Schedulers;
@@ -251,16 +250,12 @@ public class ChatGroupActivity extends AppCompatActivity {
         });
 
         imageUploadSub = Observable.fromCallable(
-                new Func0<Map>() {
+                new Callable<Map>() {
                     @Override
-                    public Map call() {
-                        try {
-                            Log.d(TAG, "Image uploading");
-                            return cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return null;
-                        }
+                    public Map call() throws Exception {
+
+                        Log.d(TAG, "Image uploading");
+                        return cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
                     }
                 })
                 .filter(new Func1<Map, Boolean>() {

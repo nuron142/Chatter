@@ -10,17 +10,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jakewharton.rxbinding.widget.RxTextView;
 import com.jakewharton.rxbinding.widget.TextViewTextChangeEvent;
 import com.nuron.chatter.Activities.HomeActivity;
 import com.nuron.chatter.Activities.LoginActivity;
-import com.nuron.chatter.Adapters.SearchAndAddFriendAdapter;
+import com.nuron.chatter.Adapters.SearchAddFriendAdapter;
 import com.nuron.chatter.Model.ParseFriend;
+import com.nuron.chatter.Model.SearchUser;
 import com.nuron.chatter.R;
+import com.nuron.chatter.ViewHolders.SearchAddFriendViewHolder;
 import com.parse.ParseACL;
-import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -37,8 +37,8 @@ import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func0;
 import rx.functions.Func1;
+import rx.functions.Func2;
 import rx.parse.ParseObservable;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
@@ -66,11 +66,10 @@ public class SearchAndAddFriendFragment extends Fragment {
     ProgressWheel progressWheel;
 
     CompositeSubscription allSubscriptions;
-    SearchAndAddFriendAdapter searchAndAddFriendAdapter;
+    SearchAddFriendAdapter searchAddFriendAdapter;
     Subscription searchQuerySub;
 
-    List<ParseUser> allUsers = new ArrayList<>();
-    List<ParseUser> searchUsers = new ArrayList<>();
+    List<SearchUser> allUsers = new ArrayList<>();
 
     public SearchAndAddFriendFragment() {
     }
@@ -90,8 +89,8 @@ public class SearchAndAddFriendFragment extends Fragment {
         usersRecyclerView.setHasFixedSize(true);
         usersRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        searchAndAddFriendAdapter = new SearchAndAddFriendAdapter(getActivity(), this);
-        usersRecyclerView.setAdapter(searchAndAddFriendAdapter);
+        searchAddFriendAdapter = new SearchAddFriendAdapter(getActivity(), this);
+        usersRecyclerView.setAdapter(searchAddFriendAdapter);
 
         return rootView;
     }
@@ -122,7 +121,6 @@ public class SearchAndAddFriendFragment extends Fragment {
     @OnClick(R.id.search_clear_button)
     public void clearSearch() {
         searchUsersText.setText("");
-        searchResultText.setText("Showing all users");
         loadCachedUsers();
     }
 
@@ -136,11 +134,13 @@ public class SearchAndAddFriendFragment extends Fragment {
     private void loadCachedUsers() {
 
         if (allUsers.size() > 0) {
-            searchAndAddFriendAdapter.clear();
-            for (ParseUser parseUser : allUsers) {
-                searchAndAddFriendAdapter.addData(parseUser);
+
+            searchResultText.setText("Showing all users");
+            searchAddFriendAdapter.clear();
+            for (SearchUser searchUser : allUsers) {
+                searchAddFriendAdapter.addData(searchUser);
             }
-            searchAndAddFriendAdapter.notifyDataSetChanged();
+            searchAddFriendAdapter.notifyDataSetChanged();
         }
     }
 
@@ -148,36 +148,61 @@ public class SearchAndAddFriendFragment extends Fragment {
 
         progressWheel.setVisibility(View.VISIBLE);
         allUsers.clear();
-        searchAndAddFriendAdapter.clear();
+        searchAddFriendAdapter.clear();
         searchResultText.setText("Loading all users");
-        allSubscriptions.add(Observable.fromCallable(
+
+        final ParseQuery<ParseFriend> friendsQuery = ParseQuery.getQuery(ParseFriend.class);
+        friendsQuery.whereContains(ParseFriend.USER_ID, ParseUser.getCurrentUser().getObjectId());
+        friendsQuery.addAscendingOrder(ParseFriend.FRIEND_ID);
+
+        Observable friendQueryObservable = Observable.fromCallable(
+                new Callable<List<ParseFriend>>() {
+                    @Override
+                    public List<ParseFriend> call() throws Exception {
+                        return friendsQuery.find();
+                    }
+                });
+
+        final ParseQuery<ParseUser> allUsersQuery = ParseUser.getQuery();
+        allUsersQuery.addAscendingOrder(ParseFriend.OBJECT_ID);
+
+        Observable allUsersQueryObservable = Observable.fromCallable(
                 new Callable<List<ParseUser>>() {
                     @Override
                     public List<ParseUser> call() throws Exception {
-                        ParseQuery<ParseUser> query = ParseUser.getQuery();
-                        return query.find();
+                        return allUsersQuery.find();
+                    }
+                });
+
+
+        allSubscriptions.add(Observable.zip(allUsersQueryObservable, friendQueryObservable,
+                new Func2<List<ParseUser>, List<ParseFriend>, List<SearchUser>>() {
+
+                    @Override
+                    public List<SearchUser> call(List<ParseUser> parseUsers, List<ParseFriend> parseFriends) {
+                        return getSearchUsers(parseUsers, parseFriends);
                     }
                 })
-                .flatMap(new Func1<List<ParseUser>, Observable<ParseUser>>() {
+                .flatMap(new Func1<List<SearchUser>, Observable<SearchUser>>() {
+
                     @Override
-                    public Observable<ParseUser> call(List<ParseUser> parseUsers) {
-                        return Observable.from(parseUsers);
+                    public Observable<SearchUser> call(List<SearchUser> searchUsers) {
+                        return Observable.from(searchUsers);
                     }
                 })
-                .filter(new Func1<ParseUser, Boolean>() {
+                .filter(new Func1<SearchUser, Boolean>() {
                     @Override
-                    public Boolean call(ParseUser parseUser) {
-                        return !parseUser.getObjectId()
+                    public Boolean call(SearchUser searchUser) {
+                        return !searchUser.getParseUser().getObjectId()
                                 .equals(ParseUser.getCurrentUser().getObjectId());
                     }
                 })
-                .subscribeOn(Schedulers.newThread())
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ParseUser>() {
+                .subscribe(new Subscriber<SearchUser>() {
                     @Override
                     public void onCompleted() {
-
-                        if (searchAndAddFriendAdapter.getItemCount() == 0) {
+                        if (searchAddFriendAdapter.getItemCount() == 0) {
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                         } else {
                             emptyItemsLayout.setVisibility(View.GONE);
@@ -186,38 +211,31 @@ public class SearchAndAddFriendFragment extends Fragment {
                         searchResultText.setText("Showing all users");
 
                         progressWheel.setVisibility(View.GONE);
+                        searchAddFriendAdapter.notifyDataSetChanged();
 
-                        searchAndAddFriendAdapter.notifyDataSetChanged();
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.d(TAG, "Exception during loading users : " + e);
-                        progressWheel.setVisibility(View.GONE);
-                        Toast.makeText(getActivity(),
-                                "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
                     }
 
                     @Override
-                    public void onNext(ParseUser parseUser) {
-                        allUsers.add(parseUser);
-                        searchAndAddFriendAdapter.addData(parseUser);
-                    }
+                    public void onNext(SearchUser searchUser) {
 
+                        allUsers.add(searchUser);
+                        searchAddFriendAdapter.addData(searchUser);
+
+                    }
                 })
         );
+
     }
 
     private void searchTextListener() {
 
         allSubscriptions.add(RxTextView.textChangeEvents(searchUsersText)
                 .debounce(100, TimeUnit.MILLISECONDS)
-                .filter(new Func1<TextViewTextChangeEvent, Boolean>() {
-                    @Override
-                    public Boolean call(TextViewTextChangeEvent textViewTextChangeEvent) {
-                        return textViewTextChangeEvent.text().length() > 2;
-                    }
-                })
                 .map(new Func1<TextViewTextChangeEvent, String>() {
                     @Override
                     public String call(TextViewTextChangeEvent textViewTextChangeEvent) {
@@ -239,6 +257,14 @@ public class SearchAndAddFriendFragment extends Fragment {
                     @Override
                     public void onNext(String searchQuery) {
 
+                        if (searchQuery.isEmpty()) {
+                            loadCachedUsers();
+                        }
+
+                        if (searchQuery.length() < 2) {
+                            return;
+                        }
+
                         searchResultText.setText("Searching for " + searchQuery);
 
                         searchUsers(searchQuery);
@@ -249,10 +275,8 @@ public class SearchAndAddFriendFragment extends Fragment {
 
     private void searchUsers(String searchQuery) {
 
-        Log.d(TAG, "Firing search query for : " + searchQuery);
-
-        if (searchAndAddFriendAdapter.getItemCount() > 0) {
-            searchAndAddFriendAdapter.clear();
+        if (searchAddFriendAdapter.getItemCount() > 0) {
+            searchAddFriendAdapter.clear();
         }
 
         if (progressWheel.getVisibility() == View.GONE) {
@@ -270,6 +294,7 @@ public class SearchAndAddFriendFragment extends Fragment {
         queries.add(emailQuery);
 
         final ParseQuery<ParseUser> messageQuery = ParseQuery.or(queries);
+        messageQuery.addAscendingOrder(ParseFriend.OBJECT_ID);
         messageQuery.setLimit(50);
 
         if (searchQuerySub != null && !searchQuerySub.isUnsubscribed()) {
@@ -278,82 +303,127 @@ public class SearchAndAddFriendFragment extends Fragment {
             searchQuerySub = null;
         }
 
-        searchQuerySub = Observable.fromCallable(
-                new Func0<List<ParseUser>>() {
+
+        final ParseQuery<ParseFriend> friendsQuery = ParseQuery.getQuery(ParseFriend.class);
+        friendsQuery.whereMatches(ParseFriend.USER_ID, ParseUser.getCurrentUser().getObjectId());
+        friendsQuery.addAscendingOrder(ParseFriend.FRIEND_ID);
+
+
+        Observable friendQueryObservable = Observable.fromCallable(
+                new Callable<List<ParseFriend>>() {
                     @Override
-                    public List<ParseUser> call() {
-                        try {
-                            return messageQuery.find();
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                            throw new SecurityException("Query failed : " + e.getMessage());
-                        }
+                    public List<ParseFriend> call() throws Exception {
+                        return friendsQuery.find();
+                    }
+                });
+
+        Observable searchUsersObservable = Observable.fromCallable(
+                new Callable<List<ParseUser>>() {
+                    @Override
+                    public List<ParseUser> call() throws Exception {
+                        return messageQuery.find();
+                    }
+                });
+
+
+        searchQuerySub = Observable.zip(searchUsersObservable, friendQueryObservable,
+                new Func2<List<ParseUser>, List<ParseFriend>, List<SearchUser>>() {
+
+                    @Override
+                    public List<SearchUser> call(List<ParseUser> parseUsers,
+                                                 List<ParseFriend> parseFriends) {
+                        return getSearchUsers(parseUsers, parseFriends);
                     }
                 })
-                .flatMap(new Func1<List<ParseUser>, Observable<ParseUser>>() {
+                .flatMap(new Func1<List<SearchUser>, Observable<SearchUser>>() {
+
                     @Override
-                    public Observable<ParseUser> call(List<ParseUser> parseUsers) {
-                        return Observable.from(parseUsers);
+                    public Observable<SearchUser> call(List<SearchUser> searchUsers) {
+                        return Observable.from(searchUsers);
                     }
                 })
-                .filter(new Func1<ParseUser, Boolean>() {
+                .filter(new Func1<SearchUser, Boolean>() {
                     @Override
-                    public Boolean call(ParseUser parseUser) {
-                        return !parseUser.getObjectId()
+                    public Boolean call(SearchUser searchUser) {
+                        return !searchUser.getParseUser().getObjectId()
                                 .equals(ParseUser.getCurrentUser().getObjectId());
                     }
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ParseUser>() {
+                .subscribe(new Subscriber<SearchUser>() {
                     @Override
                     public void onCompleted() {
-
-                        if (searchAndAddFriendAdapter.getItemCount() == 0) {
+                        if (searchAddFriendAdapter.getItemCount() == 0) {
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                         } else {
                             emptyItemsLayout.setVisibility(View.GONE);
                         }
 
-                        searchResultText.setText(searchAndAddFriendAdapter.getItemCount() +
+                        searchResultText.setText(searchAddFriendAdapter.getItemCount() +
                                 " users found");
 
                         progressWheel.setVisibility(View.GONE);
-                        searchAndAddFriendAdapter.notifyDataSetChanged();
+                        searchAddFriendAdapter.notifyDataSetChanged();
                     }
 
                     @Override
                     public void onError(Throwable e) {
-
-                        Log.d(TAG, "Exception during searching users : " + e);
-                        progressWheel.setVisibility(View.GONE);
-                        Toast.makeText(getActivity(),
-                                "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onNext(ParseUser parseUser) {
-                        searchAndAddFriendAdapter.addData(parseUser);
+                    public void onNext(SearchUser searchUser) {
+                        searchAddFriendAdapter.addData(searchUser);
                     }
                 });
+
         allSubscriptions.add(searchQuerySub);
     }
 
+    private List<SearchUser> getSearchUsers(List<ParseUser> parseUsers,
+                                            List<ParseFriend> parseFriends) {
 
-    public void addFriend(int position) {
+        List<SearchUser> searchUserList = new ArrayList<>();
 
-        ParseUser friendUser = searchAndAddFriendAdapter.getItemAtPos(position);
+        for (ParseUser parseUser : parseUsers) {
+
+            SearchUser searchUser = new SearchUser(parseUser);
+            String searchUserObjectId = parseUser.getObjectId();
+
+            for (ParseFriend parseFriend : parseFriends) {
+
+                if (parseFriend.getFriendId().equals(searchUserObjectId)) {
+
+                    searchUser.setIsRequestSent(parseFriend.getRequestSent());
+                    searchUser.setIsRequestAccepted(parseFriend.getRequestAccepted());
+                    break;
+                }
+            }
+
+            searchUserList.add(searchUser);
+        }
+
+        return searchUserList;
+
+    }
+
+    public void addFriend(final SearchAddFriendViewHolder searchAddFriendViewHolder,
+                          int position) {
+
+        final ParseUser friendUser = searchAddFriendAdapter.getItemAtPos(position).getParseUser();
         if (friendUser != null) {
 
-            ParseUser currentUser = ParseUser.getCurrentUser();
+            searchAddFriendViewHolder.addFriendImage.setVisibility(View.GONE);
+            searchAddFriendViewHolder.addFriendProgress.spin();
 
             ParseFriend parseFriend = new ParseFriend();
 
-            parseFriend.setUserId(currentUser.getObjectId());
-            parseFriend.setUserName(currentUser.getString(LoginActivity.USER_ACCOUNT_NAME));
-            parseFriend.setUserNameLowercase(currentUser.
+            parseFriend.setUserId(ParseUser.getCurrentUser().getObjectId());
+            parseFriend.setUserName(ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
+            parseFriend.setUserNameLowercase(ParseUser.getCurrentUser().
                     getString(LoginActivity.USER_ACCOUNT_NAME).toLowerCase());
-
+            parseFriend.setRequestSent(ParseFriend.STRING_TRUE);
+            parseFriend.setRequestAccepted(ParseFriend.STRING_FALSE);
 
             parseFriend.setFriendId(friendUser.getObjectId());
             parseFriend.setFriendName(friendUser.getString(LoginActivity.USER_ACCOUNT_NAME));
@@ -375,6 +445,11 @@ public class SearchAndAddFriendFragment extends Fragment {
                     .subscribe(new Subscriber<ParseFriend>() {
                         @Override
                         public void onCompleted() {
+
+                            searchAddFriendViewHolder.addFriendProgress.stopSpinning();
+                            searchAddFriendViewHolder.addFriendImage.
+                                    setImageResource(R.drawable.ic_done_black_24dp);
+                            searchAddFriendViewHolder.addFriendImage.setVisibility(View.VISIBLE);
                             Log.d(TAG, "ParseFriend added");
                         }
 

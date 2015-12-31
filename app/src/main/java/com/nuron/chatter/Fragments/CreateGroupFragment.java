@@ -150,6 +150,7 @@ public class CreateGroupFragment extends Fragment {
         groupExistsQuery.whereEqualTo(ChatGroup.GROUP_NAME, chatGroup.getGroupName());
 
         allSubscriptions.add(Observable.fromCallable(
+
                 new Callable<List<ChatGroup>>() {
                     @Override
                     public List<ChatGroup> call() throws Exception {

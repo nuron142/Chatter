@@ -10,9 +10,15 @@ import com.parse.ParseObject;
 @ParseClassName("ParseFriend")
 public class ParseFriend extends ParseObject {
 
-    public static final String GROUP_NAME = "groupName";
-    public static final String GROUP_ID = "groupId";
+    public static final String OBJECT_ID = "objectId";
+    public static final String USER_ID = "userId";
+    public static final String USER_NAME_LOWER_CASE = "userNameLowercase";
+    public static final String FRIEND_NAME_LOWER_CASE = "friendNameLowerCase";
+    public static final String FRIEND_ID = "friendId";
     public static final String UPDATED_AT = "updatedAt";
+
+    public static final String STRING_TRUE = "true";
+    public static final String STRING_FALSE = "false";
 
     private String userId;
     private String userName;
@@ -20,6 +26,27 @@ public class ParseFriend extends ParseObject {
     private String friendId;
     private String friendName;
     private String friendNameLowerCase;
+    private String requestSent;
+    private String requestAccepted;
+
+    public ParseFriend(){
+    }
+
+    public String getRequestSent() {
+        return getString("requestSent");
+    }
+
+    public void setRequestSent(String requestSent) {
+        put("requestSent", requestSent);
+    }
+
+    public String getRequestAccepted() {
+        return getString("requestAccepted");
+    }
+
+    public void setRequestAccepted(String requestAccepted) {
+        put("requestAccepted", requestAccepted);
+    }
 
     public String getFriendNameLowerCase() {
         return getString("friendNameLowerCase");
