@@ -179,19 +179,21 @@ public class HomeActivity extends AppCompatActivity
 
         int id = item.getItemId();
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-
         if (id == R.id.logout) {
+
+            drawer.closeDrawer(GravityCompat.START);
             logOutUser();
         } else if (id == R.id.groups_activity) {
+
+            drawer.closeDrawer(GravityCompat.START);
 
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
+
                     launchGroupsActivity();
                 }
-            }, 200);
+            }, 300);
         }
         return true;
     }
