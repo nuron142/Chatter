@@ -270,7 +270,7 @@ public class SearchAndAddFriendFragment extends Fragment {
                             return;
                         }
 
-                        searchResultText.setText("Searching for " + searchQuery);
+                        searchResultText.setText("Searching for '" + searchQuery + "'");
 
                         searchUsers(searchQuery);
                     }
@@ -278,7 +278,7 @@ public class SearchAndAddFriendFragment extends Fragment {
         );
     }
 
-    private void searchUsers(String searchQuery) {
+    private void searchUsers(final String searchQuery) {
 
         if (searchAddFriendAdapter.getItemCount() > 0) {
             searchAddFriendAdapter.clear();
@@ -366,7 +366,7 @@ public class SearchAndAddFriendFragment extends Fragment {
                         }
 
                         searchResultText.setText(searchAddFriendAdapter.getItemCount() +
-                                " users found");
+                                " users found for '" + searchQuery + "'");
 
                         progressWheel.setVisibility(View.GONE);
                         searchAddFriendAdapter.notifyDataSetChanged();
@@ -452,9 +452,8 @@ public class SearchAndAddFriendFragment extends Fragment {
                         public void onCompleted() {
 
                             searchAddFriendViewHolder.addFriendProgress.stopSpinning();
-                            searchAddFriendViewHolder.addFriendImage.
-                                    setImageResource(R.drawable.ic_done_black_24dp);
-                            searchAddFriendViewHolder.addFriendImage.setVisibility(View.VISIBLE);
+                            searchAddFriendViewHolder.addFriendImage.setVisibility(View.GONE);
+                            searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.VISIBLE);
                             Log.d(TAG, "ParseFriend added");
                         }
 

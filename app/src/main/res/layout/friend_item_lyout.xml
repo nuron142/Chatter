@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/user_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        card_view:cardCornerRadius="0dp"
+        card_view:cardElevation="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/contact_circle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/user_circle_drawable"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_person_white_18dp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_margin="8dp"
+                    android:layout_toEndOf="@+id/contact_circle"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/user_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="18sp"
+                        tools:text="Darth Vader" />
+
+                    <TextView
+                        android:id="@+id/user_email"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textSize="12sp"
+                        tools:text="darth@empire.com" />
+
+                </LinearLayout>
+
+
+                <RelativeLayout
+                    android:id="@+id/add_friend_layout"
+                    android:layout_width="40dp"
+                    android:layout_height="54dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/add_friend_image"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_centerInParent="true"
+                        android:alpha="0.6"
+                        android:visibility="visible"
+                        android:src="@drawable/ic_add_black_24dp" />
+
+                    <ImageView
+                        android:id="@+id/friend_request_accpted_image"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_centerInParent="true"
+                        android:alpha="0.8"
+                        android:padding="4dp"
+                        android:visibility="gone"
+                        android:background="@drawable/friend_accepted_circle_drawable"
+                        android:src="@drawable/ic_done_white_18dp" />
+
+                    <com.pnikosis.materialishprogress.ProgressWheel
+                        android:id="@+id/add_friend_progress"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_centerInParent="true"
+                        card_view:matProg_barWidth="2dp" />
+
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.3dp"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="64dp"
+                android:background="@color/ten_percent_black"
+                android:visibility="visible" />
+
+            <LinearLayout
+                android:id="@+id/request_action_layout"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginStart="64dp"
+                android:layout_marginEnd="12dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/chat_action_text"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="start|center_vertical"
+                    android:text="Accept"
+                    android:textAllCaps="true"
+                    android:textColor="@color/fifty_percent_black"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/request_action_text"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="start|center_vertical"
+                    android:text="Remove"
+                    android:textAllCaps="true"
+                    android:textColor="@color/fifty_percent_black"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+</LinearLayout>

@@ -79,21 +79,19 @@ public class SearchAddFriendAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 searchUser.getIsRequestSent().equals(SearchUser.STRING_TRUE)) {
             disableClick = true;
 
-            searchAddFriendViewHolder.addFriendImage.setVisibility(View.VISIBLE);
-            searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.GONE);
-
-            searchAddFriendViewHolder.addFriendImage.setImageResource(R.drawable.ic_done_black_24dp);
+            searchAddFriendViewHolder.addFriendImage.setVisibility(View.GONE);
+            searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.VISIBLE);
 
             if (searchUser.getIsRequestAccepted() != null &&
                     searchUser.getIsRequestAccepted().equals(SearchUser.STRING_TRUE)) {
                 disableClick = true;
 
-                searchAddFriendViewHolder.addFriendImage.setVisibility(View.GONE);
                 searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.VISIBLE);
             }
 
         } else {
-            searchAddFriendViewHolder.addFriendImage.setImageResource(R.drawable.ic_add_black_24dp);
+            searchAddFriendViewHolder.addFriendImage.setVisibility(View.VISIBLE);
+            searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.GONE);
         }
 
         final boolean disableClick1 = disableClick;
