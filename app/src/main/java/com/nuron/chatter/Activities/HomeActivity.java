@@ -185,8 +185,6 @@ public class HomeActivity extends AppCompatActivity
             logOutUser();
         } else if (id == R.id.groups_activity) {
 
-            drawer.closeDrawer(GravityCompat.START);
-
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -194,6 +192,8 @@ public class HomeActivity extends AppCompatActivity
                     launchGroupsActivity();
                 }
             }, 300);
+
+            drawer.closeDrawer(GravityCompat.START);
         }
         return true;
     }

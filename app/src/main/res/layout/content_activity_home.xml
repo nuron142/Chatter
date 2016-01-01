@@ -37,7 +37,9 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="8dp" />
 
             <com.pnikosis.materialishprogress.ProgressWheel
                 android:id="@+id/progress_wheel"
