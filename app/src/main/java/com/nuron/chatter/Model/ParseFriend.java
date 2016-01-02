@@ -25,6 +25,36 @@ public class ParseFriend extends ParseObject {
     private String friendNameLowerCase;
     private String friendEmail;
 
+
+    public ParseFriend() {
+    }
+
+    public ParseFriend(ParseFriendRequest parseFriendRequest, boolean isUser) {
+
+        if (isUser) {
+
+            setUserId(parseFriendRequest.getUserId());
+            setUserName(parseFriendRequest.getUserName());
+            setUserNameLowercase(parseFriendRequest.getUserNameLowercase());
+            setFriendId(parseFriendRequest.getFriendId());
+            setFriendName(parseFriendRequest.getFriendName());
+            setFriendNameLowerCase(parseFriendRequest.getFriendNameLowerCase());
+            setFriendEmail(parseFriendRequest.getFriendEmail());
+
+        } else {
+
+            setUserId(parseFriendRequest.getFriendId());
+            setUserName(parseFriendRequest.getFriendName());
+            setUserNameLowercase(parseFriendRequest.getFriendNameLowerCase());
+            setFriendId(parseFriendRequest.getUserId());
+            setFriendName(parseFriendRequest.getUserName());
+            setFriendNameLowerCase(parseFriendRequest.getUserNameLowercase());
+            setFriendEmail(parseFriendRequest.getUserEmail());
+
+        }
+
+    }
+
     public String getUserId() {
         return getString("userId");
     }

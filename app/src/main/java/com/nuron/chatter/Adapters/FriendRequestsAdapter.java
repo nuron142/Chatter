@@ -1,78 +1,82 @@
 package com.nuron.chatter.Adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.nuron.chatter.Activities.ChatSingleActivity;
-import com.nuron.chatter.Activities.LoginActivity;
-import com.nuron.chatter.Model.ChatSingleMessage;
+import com.nuron.chatter.Fragments.FriendRequestsFragment;
+import com.nuron.chatter.Model.ParseFriendRequest;
 import com.nuron.chatter.R;
-import com.parse.ParseUser;
+import com.nuron.chatter.ViewHolders.FriendRequestViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-
 /**
  * Created by nuron on 02/01/16.
  */
-public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAdapter.ViewHolder> {
+public class FriendRequestsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    List<ParseUser> parseUsers;
+    private final static String TAG = SearchAddFriendAdapter.class.getSimpleName();
+
+    List<ParseFriendRequest> parseFriendRequests;
     Context context;
-    private final static String TAG = FriendRequestsAdapter.class.getSimpleName();
+    FriendRequestsFragment friendRequestsFragment;
 
-    public FriendRequestsAdapter(Context context) {
+    public FriendRequestsAdapter(Context context, FriendRequestsFragment fragment) {
         super();
         this.context = context;
-        parseUsers = new ArrayList<>();
+        this.friendRequestsFragment = fragment;
+        parseFriendRequests = new ArrayList<>();
     }
 
-    public void addData(ParseUser parseUser) {
-        parseUsers.add(parseUser);
+    public void addData(ParseFriendRequest parseFriendRequest) {
+        parseFriendRequests.add(parseFriendRequest);
     }
 
     public void removeData(int position) {
-        parseUsers.remove(position);
+        parseFriendRequests.remove(position);
     }
 
     public void clear() {
-        if (parseUsers != null) {
-            parseUsers.clear();
+        if (parseFriendRequests != null) {
+            parseFriendRequests.clear();
         }
     }
 
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.user_item_layout, viewGroup, false);
-        return new ViewHolder(v);
+    public ParseFriendRequest getItemAtPos(int position) {
+        if (parseFriendRequests != null) {
+            return parseFriendRequests.get(position);
+        }
+
+        return null;
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        final ParseUser parseUser = parseUsers.get(position);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        View v = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.friend_requests_item_layout, viewGroup, false);
+        return new FriendRequestViewHolder(v);
+    }
 
-        viewHolder.userName.setText(
-                parseUser.getString(LoginActivity.USER_ACCOUNT_NAME));
-        viewHolder.userEmail.setText(
-                parseUser.getString(LoginActivity.USER_PERSONAL_EMAIL));
-        viewHolder.userLayout.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, final int position) {
+        final ParseFriendRequest parseFriendRequest = parseFriendRequests.get(position);
+
+        final FriendRequestViewHolder friendRequestViewHolder =
+                (FriendRequestViewHolder) viewHolder;
+
+        friendRequestViewHolder.friendName.setText(parseFriendRequest.getUserName());
+        friendRequestViewHolder.friendEmail.setText(parseFriendRequest.getUserEmail());
+
+        friendRequestViewHolder.acceptFriendLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(context, ChatSingleActivity.class);
-                intent.putExtra(ChatSingleMessage.RECEIVER_ID, parseUser.getObjectId());
-                intent.putExtra(LoginActivity.USER_ACCOUNT_NAME,
-                        parseUser.getString(LoginActivity.USER_ACCOUNT_NAME));
-                context.startActivity(intent);
+                friendRequestsFragment.handleFriendRequest(friendRequestViewHolder, position ,true);
+
             }
         });
 
@@ -80,21 +84,7 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
 
     @Override
     public int getItemCount() {
-        return parseUsers.size();
+        return parseFriendRequests.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-
-        @Bind(R.id.user_name)
-        TextView userName;
-        @Bind(R.id.user_email)
-        TextView userEmail;
-        @Bind(R.id.user_layout)
-        View userLayout;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-    }
 }

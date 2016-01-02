@@ -12,18 +12,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nuron.chatter.Adapters.SearchAddFriendAdapter;
-import com.nuron.chatter.Adapters.UsersRecyclerAdapter;
-import com.nuron.chatter.LocalModel.LocalFriend;
+import com.nuron.chatter.Adapters.FriendRequestsAdapter;
 import com.nuron.chatter.Model.ParseFriend;
+import com.nuron.chatter.Model.ParseFriendRequest;
 import com.nuron.chatter.R;
+import com.nuron.chatter.ViewHolders.FriendRequestViewHolder;
+import com.parse.ParseACL;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -56,11 +55,7 @@ public class FriendRequestsFragment extends Fragment {
     SwipeRefreshLayout swipeRefreshLayout;
 
     CompositeSubscription allSubscriptions;
-    SearchAddFriendAdapter searchAddFriendAdapter;
-
-    UsersRecyclerAdapter usersRecyclerAdapter;
-
-    String currentUserId = ParseUser.getCurrentUser().getObjectId();
+    FriendRequestsAdapter friendRequestsAdapter;
 
     public FriendRequestsFragment() {
     }
@@ -73,20 +68,17 @@ public class FriendRequestsFragment extends Fragment {
 
         ButterKnife.bind(this, rootView);
 
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        friendRequestsAdapter = new FriendRequestsAdapter(getActivity(), this);
 
-        usersRecyclerAdapter = new UsersRecyclerAdapter(getActivity());
-        recyclerView.setAdapter(usersRecyclerAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(friendRequestsAdapter);
         recyclerView.setHasFixedSize(true);
 
         swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-
-                loadAllFriends();
-                //loadUsers();
+                loadFriendRequests();
             }
         });
 
@@ -100,9 +92,8 @@ public class FriendRequestsFragment extends Fragment {
         if (allSubscriptions == null) {
             allSubscriptions = new CompositeSubscription();
         }
-        //loadUsers();
 
-        loadAllFriends();
+        loadFriendRequests();
     }
 
 
@@ -117,38 +108,40 @@ public class FriendRequestsFragment extends Fragment {
         }
     }
 
-    private void loadUsers() {
+    private void loadFriendRequests() {
+
+        Log.d(TAG, "Loading friend requests");
 
         emptyItemsLayout.setVisibility(View.GONE);
-        usersRecyclerAdapter.clear();
+        friendRequestsAdapter.clear();
+
+        final ParseQuery<ParseFriendRequest> friendRequestReceivedQuery =
+                ParseQuery.getQuery(ParseFriendRequest.class);
+        friendRequestReceivedQuery.whereEqualTo(ParseFriend.FRIEND_ID,
+                ParseUser.getCurrentUser().getObjectId());
+        friendRequestReceivedQuery.addAscendingOrder(ParseFriendRequest.UPDATED_AT);
+
         allSubscriptions.add(Observable.fromCallable(
-                new Callable<List<ParseUser>>() {
+                new Callable<List<ParseFriendRequest>>() {
                     @Override
-                    public List<ParseUser> call() throws Exception {
-                        ParseQuery<ParseUser> query = ParseUser.getQuery();
-                        return query.find();
+                    public List<ParseFriendRequest> call() throws Exception {
+                        return friendRequestReceivedQuery.find();
                     }
                 })
-                .flatMap(new Func1<List<ParseUser>, Observable<ParseUser>>() {
+                .flatMap(new Func1<List<ParseFriendRequest>, Observable<ParseFriendRequest>>() {
                     @Override
-                    public Observable<ParseUser> call(List<ParseUser> parseUsers) {
-                        return Observable.from(parseUsers);
+                    public Observable<ParseFriendRequest> call(
+                            List<ParseFriendRequest> parseFriendRequests) {
+                        return Observable.from(parseFriendRequests);
                     }
                 })
-                .filter(new Func1<ParseUser, Boolean>() {
-                    @Override
-                    public Boolean call(ParseUser parseUser) {
-                        return !parseUser.getObjectId()
-                                .equals(ParseUser.getCurrentUser().getObjectId());
-                    }
-                })
-                .subscribeOn(Schedulers.newThread())
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ParseUser>() {
+                .subscribe(new Subscriber<ParseFriendRequest>() {
                     @Override
                     public void onCompleted() {
 
-                        if (usersRecyclerAdapter.getItemCount() == 0) {
+                        if (friendRequestsAdapter.getItemCount() == 0) {
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                         } else {
                             emptyItemsLayout.setVisibility(View.GONE);
@@ -160,58 +153,7 @@ public class FriendRequestsFragment extends Fragment {
                             swipeRefreshLayout.setRefreshing(false);
                         }
 
-                        usersRecyclerAdapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "Exception during SignUp : " + e);
-                        progressWheel.stopSpinning();
-                        Toast.makeText(getActivity(),
-                                "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onNext(ParseUser parseUser) {
-                        usersRecyclerAdapter.addData(parseUser);
-                    }
-
-                })
-        );
-    }
-
-    public void loadAllFriends() {
-
-        ParseQuery<ParseFriend> friendRequestSentQuery = ParseQuery.getQuery(ParseFriend.class);
-        friendRequestSentQuery.whereEqualTo(ParseFriend.USER_ID, ParseUser.getCurrentUser().getObjectId());
-
-        ParseQuery<ParseFriend> friendRequestReceivedQuery = ParseQuery.getQuery(ParseFriend.class);
-        friendRequestReceivedQuery.whereEqualTo(ParseFriend.FRIEND_ID, ParseUser.getCurrentUser().getObjectId());
-
-        List<ParseQuery<ParseFriend>> queries = new ArrayList<>();
-        queries.add(friendRequestSentQuery);
-        queries.add(friendRequestReceivedQuery);
-
-        final ParseQuery<ParseFriend> allFriendsQuery = ParseQuery.or(queries);
-        allFriendsQuery.addAscendingOrder("createdAt");
-
-        allSubscriptions.add(Observable.fromCallable(
-                new Callable<List<ParseFriend>>() {
-                    @Override
-                    public List<ParseFriend> call() throws Exception {
-                        return allFriendsQuery.find();
-                    }
-                })
-                .flatMap(new Func1<List<ParseFriend>, Observable<LocalFriend>>() {
-                    @Override
-                    public Observable<LocalFriend> call(List<ParseFriend> parseFriends) {
-                        return Observable.from(getLocalFriends(parseFriends));
-                    }
-                })
-                .subscribe(new Subscriber<LocalFriend>() {
-                    @Override
-                    public void onCompleted() {
-
+                        friendRequestsAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -220,46 +162,98 @@ public class FriendRequestsFragment extends Fragment {
                     }
 
                     @Override
-                    public void onNext(LocalFriend localFriend) {
-                        Log.d(TAG, "Friend : " + localFriend.getFriendName());
+                    public void onNext(ParseFriendRequest parseFriendRequest) {
+
+                        friendRequestsAdapter.addData(parseFriendRequest);
                     }
                 })
         );
     }
 
 
-    private List<LocalFriend> getLocalFriends(List<ParseFriend> parseFriends) {
+    public void handleFriendRequest(final FriendRequestViewHolder friendRequestViewHolder,
+                                    final int position, boolean accept) {
 
-        List<LocalFriend> localFriendList = new ArrayList<>();
+        final ParseFriendRequest parseFriendRequest = friendRequestsAdapter.getItemAtPos(position);
+        if (parseFriendRequest != null) {
 
-        for (ParseFriend parseFriend : parseFriends) {
-            LocalFriend localFriend = new LocalFriend(parseFriend);
+            friendRequestViewHolder.friendRequestLayout.setClickable(false);
 
-            if (parseFriend.getUserId().equals(currentUserId)) {
-                localFriend.setFriendId(parseFriend.getFriendId());
-                localFriend.setFriendName(parseFriend.getFriendName());
-                localFriend.setFriendNameLowerCase(
-                        parseFriend.getFriendNameLowerCase());
-            } else {
-                localFriend.setFriendId(parseFriend.getUserId());
-                localFriend.setFriendName(parseFriend.getUserName());
-                localFriend.setFriendNameLowerCase(
-                        parseFriend.getUserNameLowercase());
+            ParseACL acl = new ParseACL();
+            acl.setReadAccess(parseFriendRequest.getUserId(), true);
+            acl.setReadAccess(parseFriendRequest.getFriendId(), true);
+            acl.setWriteAccess(parseFriendRequest.getUserId(), true);
+            acl.setWriteAccess(parseFriendRequest.getFriendId(), true);
+
+            if (accept) {
+
+                friendRequestViewHolder.acceptFriendImage.setVisibility(View.INVISIBLE);
+                friendRequestViewHolder.acceptFriendProgress.spin();
+
+                parseFriendRequest.setRequestAccepted(ParseFriendRequest.STRING_TRUE);
+
+                ParseFriend user = new ParseFriend(parseFriendRequest, true);
+                user.setACL(acl);
+
+                ParseFriend friend = new ParseFriend(parseFriendRequest, false);
+                friend.setACL(acl);
+
+                final List<ParseFriend> newFriend = new ArrayList<>();
+                newFriend.add(user);
+                newFriend.add(friend);
+
+                parseFriendRequest.setRequestAccepted(ParseFriendRequest.STRING_TRUE);
+
+                allSubscriptions.add(Observable.fromCallable(
+                        new Callable<Void>() {
+                            @Override
+                            public Void call() throws Exception {
+                                ParseFriend.saveAll(newFriend);
+                                return null;
+                            }
+                        })
+                        .flatMap(new Func1<Void, Observable<Void>>() {
+                            @Override
+                            public Observable<Void> call(Void aVoid) {
+                                return Observable.fromCallable(new Callable<Void>() {
+                                    @Override
+                                    public Void call() throws Exception {
+                                        parseFriendRequest.save();
+                                        return null;
+                                    }
+                                });
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Subscriber<Void>() {
+                            @Override
+                            public void onCompleted() {
+
+                                Log.d(TAG, "ParseFriendRequest accepted");
+
+                                friendRequestViewHolder.acceptFriendProgress.stopSpinning();
+                                friendRequestsAdapter.removeData(position);
+                                friendRequestsAdapter.notifyItemRemoved(position);
+
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                friendRequestViewHolder.acceptFriendProgress.stopSpinning();
+                                Toast.makeText(getActivity(), "Could accept request",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onNext(Void aVoid) {
+
+                            }
+                        })
+                );
+
             }
 
-            localFriendList.add(localFriend);
         }
-
-        Collections.sort(localFriendList, new Comparator<LocalFriend>() {
-            @Override
-            public int compare(final LocalFriend localFriend1,
-                               final LocalFriend localFriend2) {
-                return localFriend1.getFriendNameLowerCase().
-                        compareTo(localFriend2.getFriendNameLowerCase());
-            }
-        });
-
-        return localFriendList;
     }
-
 }

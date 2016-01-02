@@ -444,17 +444,24 @@ public class SearchAndAddFriendFragment extends Fragment {
             ParseFriendRequest parseFriendRequest = new ParseFriendRequest();
 
             parseFriendRequest.setUserId(ParseUser.getCurrentUser().getObjectId());
-            parseFriendRequest.setUserName(ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
+            parseFriendRequest.setUserName(ParseUser.getCurrentUser().
+                    getString(LoginActivity.USER_ACCOUNT_NAME));
             parseFriendRequest.setUserNameLowercase(ParseUser.getCurrentUser().
                     getString(LoginActivity.USER_ACCOUNT_NAME).toLowerCase());
-            parseFriendRequest.setRequestSent(ParseFriendRequest.STRING_TRUE);
-            parseFriendRequest.setRequestAccepted(ParseFriendRequest.STRING_FALSE);
+            parseFriendRequest.setUserEmail(ParseUser.getCurrentUser().
+                    getString(LoginActivity.USER_PERSONAL_EMAIL));
 
             parseFriendRequest.setFriendId(friendUser.getObjectId());
-            parseFriendRequest.setFriendName(friendUser.getString(LoginActivity.USER_ACCOUNT_NAME));
+            parseFriendRequest.setFriendName(friendUser.
+                    getString(LoginActivity.USER_ACCOUNT_NAME));
             parseFriendRequest.setFriendNameLowerCase(friendUser.
                     getString(LoginActivity.USER_ACCOUNT_NAME).toLowerCase());
+            parseFriendRequest.setFriendEmail(friendUser.
+                    getString(LoginActivity.USER_PERSONAL_EMAIL));
 
+
+            parseFriendRequest.setRequestSent(ParseFriendRequest.STRING_TRUE);
+            parseFriendRequest.setRequestAccepted(ParseFriendRequest.STRING_FALSE);
 
             ParseACL acl = new ParseACL();
             acl.setReadAccess(ParseUser.getCurrentUser(), true);

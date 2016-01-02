@@ -26,11 +26,13 @@ public class ParseFriendRequest extends ParseObject {
     private String userId;
     private String userName;
     private String userNameLowercase;
+    private String userEmail;
     private String friendId;
     private String friendName;
     private String friendNameLowerCase;
     private String requestSent;
     private String requestAccepted;
+    private String friendEmail;
 
 
     public String getUserId() {
@@ -100,4 +102,19 @@ public class ParseFriendRequest extends ParseObject {
     }
 
 
+    public String getUserEmail() {
+        return getString("userEmail");
+    }
+
+    public void setUserEmail(String userEmail) {
+        put("userEmail", userEmail);
+    }
+
+    public String getFriendEmail() {
+        return getString("friendEmail");
+    }
+
+    public void setFriendEmail(String friendEmail) {
+        put("friendEmail", friendEmail);
+    }
 }

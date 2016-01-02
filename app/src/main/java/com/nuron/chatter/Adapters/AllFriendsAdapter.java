@@ -1,37 +1,34 @@
 package com.nuron.chatter.Adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.nuron.chatter.Activities.ChatSingleActivity;
-import com.nuron.chatter.Activities.LoginActivity;
-import com.nuron.chatter.Model.ChatSingleMessage;
+import com.nuron.chatter.Fragments.AllFriendsFragment;
 import com.nuron.chatter.Model.ParseFriend;
 import com.nuron.chatter.R;
+import com.nuron.chatter.ViewHolders.FriendRequestViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-
 /**
  * Created by nuron on 02/01/16.
  */
-public class AllFriendsAdapter extends RecyclerView.Adapter<AllFriendsAdapter.ViewHolder> {
+public class AllFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private final static String TAG = SearchAddFriendAdapter.class.getSimpleName();
 
     List<ParseFriend> parseFriends;
     Context context;
-    private final static String TAG = AllFriendsAdapter.class.getSimpleName();
+    AllFriendsFragment friendRequestsFragment;
 
-    public AllFriendsAdapter(Context context) {
+    public AllFriendsAdapter(Context context, AllFriendsFragment fragment) {
         super();
         this.context = context;
+        this.friendRequestsFragment = fragment;
         parseFriends = new ArrayList<>();
     }
 
@@ -49,52 +46,69 @@ public class AllFriendsAdapter extends RecyclerView.Adapter<AllFriendsAdapter.Vi
         }
     }
 
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.user_item_layout, viewGroup, false);
-        return new ViewHolder(v);
+    public ParseFriend getItemAtPos(int position) {
+        if (parseFriends != null) {
+            return parseFriends.get(position);
+        }
+
+        return null;
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        View v = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.friend_requests_item_layout, viewGroup, false);
+        return new FriendRequestViewHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, final int position) {
         final ParseFriend parseFriend = parseFriends.get(position);
 
-        viewHolder.userName.setText(
-                parseFriend.getFriendName());
-        viewHolder.userEmail.setText(
-                parseFriend.getString(LoginActivity.USER_PERSONAL_EMAIL));
-        viewHolder.userLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        final FriendRequestViewHolder searchAddFriendViewHolder =
+                (FriendRequestViewHolder) viewHolder;
 
-                Intent intent = new Intent(context, ChatSingleActivity.class);
-                intent.putExtra(ChatSingleMessage.RECEIVER_ID, parseFriend.getObjectId());
-                intent.putExtra(LoginActivity.USER_ACCOUNT_NAME,
-                        parseFriend.getString(LoginActivity.USER_ACCOUNT_NAME));
-                context.startActivity(intent);
-            }
-        });
+        searchAddFriendViewHolder.friendName.setText(parseFriend.getFriendName());
+        searchAddFriendViewHolder.friendEmail.setText(
+                parseFriend.getFriendEmail());
 
+        boolean disableClick = false;
+
+//        if (parseFriendRequest.getRequestSent() != null &&
+//                parseFriendRequest.getRequestSent().equals(SearchUser.STRING_TRUE)) {
+//            disableClick = true;
+//
+//            searchAddFriendViewHolder.addFriendImage.setVisibility(View.GONE);
+//            searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.VISIBLE);
+//
+//            if (parseFriendRequest.getRequestAccepted() != null &&
+//                    parseFriendRequest.getRequestAccepted().equals(SearchUser.STRING_TRUE)) {
+//                disableClick = true;
+//
+//                searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.VISIBLE);
+//            }
+//
+//        } else {
+//            searchAddFriendViewHolder.addFriendImage.setVisibility(View.VISIBLE);
+//            searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.GONE);
+//        }
+//
+//        final boolean disableClick1 = disableClick;
+//        searchAddFriendViewHolder.addFriendLayout.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                if (disableClick1) {
+//                    return;
+//                }
+//
+//                //friendRequestsFragment.sendFriendRequest(searchAddFriendViewHolder, position);
+//            }
+//        });
     }
 
     @Override
     public int getItemCount() {
         return parseFriends.size();
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
-
-        @Bind(R.id.user_name)
-        TextView userName;
-        @Bind(R.id.user_email)
-        TextView userEmail;
-        @Bind(R.id.user_layout)
-        View userLayout;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
     }
 }

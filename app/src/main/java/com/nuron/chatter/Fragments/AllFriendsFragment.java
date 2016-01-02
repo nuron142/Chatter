@@ -10,20 +10,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.nuron.chatter.Adapters.SearchAddFriendAdapter;
-import com.nuron.chatter.Adapters.UsersRecyclerAdapter;
-import com.nuron.chatter.LocalModel.LocalFriend;
+import com.nuron.chatter.Adapters.AllFriendsAdapter;
 import com.nuron.chatter.Model.ParseFriend;
 import com.nuron.chatter.R;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -56,11 +50,7 @@ public class AllFriendsFragment extends Fragment {
     SwipeRefreshLayout swipeRefreshLayout;
 
     CompositeSubscription allSubscriptions;
-    SearchAddFriendAdapter searchAddFriendAdapter;
-
-    UsersRecyclerAdapter usersRecyclerAdapter;
-
-    String currentUserId = ParseUser.getCurrentUser().getObjectId();
+    AllFriendsAdapter allFriendsAdapter;
 
     public AllFriendsFragment() {
     }
@@ -73,11 +63,10 @@ public class AllFriendsFragment extends Fragment {
 
         ButterKnife.bind(this, rootView);
 
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        allFriendsAdapter = new AllFriendsAdapter(getActivity(), this);
 
-        usersRecyclerAdapter = new UsersRecyclerAdapter(getActivity());
-        recyclerView.setAdapter(usersRecyclerAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(allFriendsAdapter);
         recyclerView.setHasFixedSize(true);
 
         swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
@@ -86,7 +75,6 @@ public class AllFriendsFragment extends Fragment {
             public void onRefresh() {
 
                 loadAllFriends();
-                //loadUsers();
             }
         });
 
@@ -100,7 +88,6 @@ public class AllFriendsFragment extends Fragment {
         if (allSubscriptions == null) {
             allSubscriptions = new CompositeSubscription();
         }
-        //loadUsers();
 
         loadAllFriends();
     }
@@ -117,38 +104,39 @@ public class AllFriendsFragment extends Fragment {
         }
     }
 
-    private void loadUsers() {
+    private void loadAllFriends() {
+
+        Log.d(TAG, "Loading all friends");
 
         emptyItemsLayout.setVisibility(View.GONE);
-        usersRecyclerAdapter.clear();
+        allFriendsAdapter.clear();
+
+        final ParseQuery<ParseFriend> allFriendsQuery = ParseQuery.getQuery(ParseFriend.class);
+        allFriendsQuery.whereEqualTo(ParseFriend.USER_ID,
+                ParseUser.getCurrentUser().getObjectId());
+        allFriendsQuery.addAscendingOrder(ParseFriend.FRIEND_NAME_LOWER_CASE);
+
         allSubscriptions.add(Observable.fromCallable(
-                new Callable<List<ParseUser>>() {
+                new Callable<List<ParseFriend>>() {
                     @Override
-                    public List<ParseUser> call() throws Exception {
-                        ParseQuery<ParseUser> query = ParseUser.getQuery();
-                        return query.find();
+                    public List<ParseFriend> call() throws Exception {
+                        return allFriendsQuery.find();
                     }
                 })
-                .flatMap(new Func1<List<ParseUser>, Observable<ParseUser>>() {
+                .flatMap(new Func1<List<ParseFriend>, Observable<ParseFriend>>() {
                     @Override
-                    public Observable<ParseUser> call(List<ParseUser> parseUsers) {
-                        return Observable.from(parseUsers);
+                    public Observable<ParseFriend> call(List<ParseFriend> parseFriends) {
+                        Log.d(TAG, "parseFriends size : " + parseFriends.size());
+                        return Observable.from(parseFriends);
                     }
                 })
-                .filter(new Func1<ParseUser, Boolean>() {
-                    @Override
-                    public Boolean call(ParseUser parseUser) {
-                        return !parseUser.getObjectId()
-                                .equals(ParseUser.getCurrentUser().getObjectId());
-                    }
-                })
-                .subscribeOn(Schedulers.newThread())
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ParseUser>() {
+                .subscribe(new Subscriber<ParseFriend>() {
                     @Override
                     public void onCompleted() {
 
-                        if (usersRecyclerAdapter.getItemCount() == 0) {
+                        if (allFriendsAdapter.getItemCount() == 0) {
                             emptyItemsLayout.setVisibility(View.VISIBLE);
                         } else {
                             emptyItemsLayout.setVisibility(View.GONE);
@@ -160,58 +148,7 @@ public class AllFriendsFragment extends Fragment {
                             swipeRefreshLayout.setRefreshing(false);
                         }
 
-                        usersRecyclerAdapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "Exception during SignUp : " + e);
-                        progressWheel.stopSpinning();
-                        Toast.makeText(getActivity(),
-                                "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onNext(ParseUser parseUser) {
-                        usersRecyclerAdapter.addData(parseUser);
-                    }
-
-                })
-        );
-    }
-
-    public void loadAllFriends() {
-
-        ParseQuery<ParseFriend> friendRequestSentQuery = ParseQuery.getQuery(ParseFriend.class);
-        friendRequestSentQuery.whereEqualTo(ParseFriend.USER_ID, ParseUser.getCurrentUser().getObjectId());
-
-        ParseQuery<ParseFriend> friendRequestReceivedQuery = ParseQuery.getQuery(ParseFriend.class);
-        friendRequestReceivedQuery.whereEqualTo(ParseFriend.FRIEND_ID, ParseUser.getCurrentUser().getObjectId());
-
-        List<ParseQuery<ParseFriend>> queries = new ArrayList<>();
-        queries.add(friendRequestSentQuery);
-        queries.add(friendRequestReceivedQuery);
-
-        final ParseQuery<ParseFriend> allFriendsQuery = ParseQuery.or(queries);
-        allFriendsQuery.addAscendingOrder("createdAt");
-
-        allSubscriptions.add(Observable.fromCallable(
-                new Callable<List<ParseFriend>>() {
-                    @Override
-                    public List<ParseFriend> call() throws Exception {
-                        return allFriendsQuery.find();
-                    }
-                })
-                .flatMap(new Func1<List<ParseFriend>, Observable<LocalFriend>>() {
-                    @Override
-                    public Observable<LocalFriend> call(List<ParseFriend> parseFriends) {
-                        return Observable.from(getLocalFriends(parseFriends));
-                    }
-                })
-                .subscribe(new Subscriber<LocalFriend>() {
-                    @Override
-                    public void onCompleted() {
-
+                        allFriendsAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -220,46 +157,12 @@ public class AllFriendsFragment extends Fragment {
                     }
 
                     @Override
-                    public void onNext(LocalFriend localFriend) {
-                        Log.d(TAG, "Friend : " + localFriend.getFriendName());
+                    public void onNext(ParseFriend parseFriendRequest) {
+
+                        allFriendsAdapter.addData(parseFriendRequest);
                     }
                 })
         );
-    }
-
-
-    private List<LocalFriend> getLocalFriends(List<ParseFriend> parseFriends) {
-
-        List<LocalFriend> localFriendList = new ArrayList<>();
-
-        for (ParseFriend parseFriend : parseFriends) {
-            LocalFriend localFriend = new LocalFriend(parseFriend);
-
-            if (parseFriend.getUserId().equals(currentUserId)) {
-                localFriend.setFriendId(parseFriend.getFriendId());
-                localFriend.setFriendName(parseFriend.getFriendName());
-                localFriend.setFriendNameLowerCase(
-                        parseFriend.getFriendNameLowerCase());
-            } else {
-                localFriend.setFriendId(parseFriend.getUserId());
-                localFriend.setFriendName(parseFriend.getUserName());
-                localFriend.setFriendNameLowerCase(
-                        parseFriend.getUserNameLowercase());
-            }
-
-            localFriendList.add(localFriend);
-        }
-
-        Collections.sort(localFriendList, new Comparator<LocalFriend>() {
-            @Override
-            public int compare(final LocalFriend localFriend1,
-                               final LocalFriend localFriend2) {
-                return localFriend1.getFriendNameLowerCase().
-                        compareTo(localFriend2.getFriendNameLowerCase());
-            }
-        });
-
-        return localFriendList;
     }
 
 }

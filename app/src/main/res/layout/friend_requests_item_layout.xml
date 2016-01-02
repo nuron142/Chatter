@@ -46,7 +46,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_margin="8dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
                     android:layout_toEndOf="@+id/contact_circle"
                     android:layout_toStartOf="@+id/add_friend_layout"
                     android:orientation="vertical">
@@ -57,7 +60,7 @@
                         android:layout_height="wrap_content"
                         android:singleLine="true"
                         android:textSize="18sp"
-                        tools:text="Sunil Kumar" />
+                        tools:text="Test 1" />
 
                     <TextView
                         android:id="@+id/user_email"
@@ -66,7 +69,7 @@
                         android:layout_marginTop="4dp"
                         android:singleLine="true"
                         android:textSize="12sp"
-                        tools:text="sunilcrj1@outlook.com" />
+                        tools:text="test1@test.com" />
 
                 </LinearLayout>
 
@@ -78,46 +81,18 @@
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="0dp"
                     android:gravity="center"
-                    android:visibility="gone">
+                    android:visibility="visible">
 
                     <ImageView
-                        android:id="@+id/add_friend_image"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_centerInParent="true"
-                        android:alpha="0.6"
-                        android:src="@drawable/ic_add_black_24dp"
-                        android:visibility="visible" />
-
-                    <ImageView
-                        android:id="@+id/friend_request_sent_image"
+                        android:id="@+id/friend_request_accept_image"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_centerInParent="true"
                         android:alpha="0.8"
                         android:background="@drawable/friend_accepted_circle_drawable"
                         android:padding="4dp"
-                        android:src="@drawable/ic_done_white_18dp"
-                        android:visibility="gone" />
-
-                    <ImageView
-                        android:id="@+id/friend_chat_image"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_centerInParent="true"
-                        android:alpha="0.8"
-                        android:background="@drawable/friend_accepted_circle_drawable"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_chat_white_18dp"
-                        android:visibility="gone" />
-
-                    <com.pnikosis.materialishprogress.ProgressWheel
-                        android:id="@+id/add_friend_progress"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_centerInParent="true"
-                        android:visibility="gone"
-                        card_view:matProg_barWidth="2dp" />
+                        android:src="@drawable/ic_arrow_downward_white_18dp"
+                        android:visibility="visible" />
 
                 </RelativeLayout>
 
@@ -127,18 +102,19 @@
                 android:id="@+id/search_divider"
                 android:layout_width="match_parent"
                 android:layout_height="0.3dp"
-                android:layout_marginStart="64dp"
+                android:layout_marginStart="60dp"
                 android:background="@color/ten_percent_black"
                 android:visibility="visible" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
-                android:layout_marginStart="64dp"
+                android:layout_marginStart="60dp"
                 android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <RelativeLayout
+                    android:id="@+id/accept_friend_layout"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -164,7 +140,7 @@
                         card_view:matProg_barWidth="2dp" />
 
                     <TextView
-                        android:id="@+id/accept_friend"
+                        android:id="@+id/accept_friend_text"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_toEndOf="@+id/accept_friend_image"
@@ -172,11 +148,13 @@
                         android:singleLine="true"
                         android:text="Accept"
                         android:textAllCaps="true"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:layout_marginStart="2dp"/>
 
                 </RelativeLayout>
 
                 <RelativeLayout
+                    android:id="@+id/reject_friend_layout"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -203,16 +181,16 @@
                         card_view:matProg_barWidth="2dp" />
 
                     <TextView
-                        android:id="@+id/reject_friend"
+                        android:id="@+id/reject_friend_text"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginTop="4dp"
                         android:layout_toEndOf="@+id/reject_friend_image"
                         android:gravity="center_vertical"
                         android:singleLine="true"
                         android:text="Reject"
                         android:textAllCaps="true"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:layout_marginStart="2dp"/>
                 </RelativeLayout>
 
             </LinearLayout>
