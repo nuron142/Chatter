@@ -156,7 +156,7 @@ public class HomeActivity extends AppCompatActivity
     @Override
     public void onStop() {
         super.onStop();
-
+        drawer.closeDrawer(GravityCompat.START);
         if (allSubscriptions != null && !allSubscriptions.isUnsubscribed()) {
             allSubscriptions.unsubscribe();
             allSubscriptions = null;
@@ -181,7 +181,6 @@ public class HomeActivity extends AppCompatActivity
 
         if (id == R.id.logout) {
 
-            drawer.closeDrawer(GravityCompat.START);
             logOutUser();
         } else if (id == R.id.groups_activity) {
 
@@ -193,7 +192,16 @@ public class HomeActivity extends AppCompatActivity
                 }
             }, 300);
 
-            drawer.closeDrawer(GravityCompat.START);
+        } else if (id == R.id.friends_activity) {
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+
+                    launchFriendsActivity();
+                }
+            }, 300);
+
         }
         return true;
     }
@@ -202,6 +210,14 @@ public class HomeActivity extends AppCompatActivity
 
         Log.d(TAG, "Launching groups activity");
         Intent intent = new Intent(HomeActivity.this, GroupsActivity.class);
+        startActivity(intent);
+    }
+
+
+    private void launchFriendsActivity() {
+
+        Log.d(TAG, "Launching groups activity");
+        Intent intent = new Intent(HomeActivity.this, FriendsActivity.class);
         startActivity(intent);
     }
 

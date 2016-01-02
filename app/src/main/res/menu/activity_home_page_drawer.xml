@@ -3,10 +3,16 @@
 
     <group android:checkableBehavior="single">
 
+
         <item
             android:id="@+id/users_activity"
             android:icon="@drawable/ic_person_black_24dp"
-            android:title="Users" />
+            android:title="Home" />
+
+        <item
+            android:id="@+id/friends_activity"
+            android:icon="@drawable/ic_person_black_24dp"
+            android:title="Friends" />
 
         <item
             android:id="@+id/groups_activity"

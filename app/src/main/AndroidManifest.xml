@@ -40,24 +40,28 @@
             android:label="@string/title_activity_chat"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustPan" />
-
         <activity
             android:name=".Activities.GroupsActivity"
             android:label="Groups"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustPan" />
-
         <activity
             android:name=".Activities.ChatGroupActivity"
             android:label="Groups"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustPan" />
 
-        <meta-data android:name="CLOUDINARY_URL" android:value="cloudinary://485393113461888:FxSKPjzERXPS8r7nVTzA7HxXdMs@nuron"/>
-
+        <meta-data
+            android:name="CLOUDINARY_URL"
+            android:value="cloudinary://485393113461888:FxSKPjzERXPS8r7nVTzA7HxXdMs@nuron" />
         <meta-data
             android:name="com.nuron.chatter.GlideConfiguration"
             android:value="GlideModule" />
+
+        <activity
+            android:name=".Activities.FriendsActivity"
+            android:label="@string/title_activity_friends"
+            android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>

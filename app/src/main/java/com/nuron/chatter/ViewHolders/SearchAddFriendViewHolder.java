@@ -29,7 +29,7 @@ public class SearchAddFriendViewHolder extends RecyclerView.ViewHolder {
     @Bind(R.id.add_friend_image)
     public ImageView addFriendImage;
 
-    @Bind(R.id.friend_request_accpted_image)
+    @Bind(R.id.friend_request_sent_image)
     public ImageView friendRequestAcceptedImage;
 
     @Bind(R.id.add_friend_progress)

@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 
 import com.nuron.chatter.Activities.LoginActivity;
 import com.nuron.chatter.Fragments.SearchAndAddFriendFragment;
-import com.nuron.chatter.Model.SearchUser;
+import com.nuron.chatter.LocalModel.SearchUser;
 import com.nuron.chatter.R;
 import com.nuron.chatter.ViewHolders.SearchAddFriendViewHolder;
 
@@ -103,7 +103,7 @@ public class SearchAddFriendAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                     return;
                 }
 
-                searchAndAddFriendFragment.addFriend(searchAddFriendViewHolder, position);
+                searchAndAddFriendFragment.sendFriendRequest(searchAddFriendViewHolder, position);
             }
         });
     }

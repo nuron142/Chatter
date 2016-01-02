@@ -4,11 +4,12 @@ import com.parse.ParseClassName;
 import com.parse.ParseObject;
 
 /**
- * Created by nuron on 26/12/15.
+ * Created by nuron on 02/01/16.
  */
 
-@ParseClassName("ParseFriend")
-public class ParseFriend extends ParseObject {
+@ParseClassName("ParseFriendRequest")
+public class ParseFriendRequest extends ParseObject {
+
 
     public static final String OBJECT_ID = "objectId";
     public static final String USER_ID = "userId";
@@ -16,6 +17,11 @@ public class ParseFriend extends ParseObject {
     public static final String FRIEND_NAME_LOWER_CASE = "friendNameLowerCase";
     public static final String FRIEND_ID = "friendId";
     public static final String UPDATED_AT = "updatedAt";
+    public static final String REQUEST_SENT = "requestSent";
+    public static final String REQUEST_ACCEPTED = "requestAccepted";
+
+    public static final String STRING_TRUE = "true";
+    public static final String STRING_FALSE = "false";
 
     private String userId;
     private String userName;
@@ -23,7 +29,9 @@ public class ParseFriend extends ParseObject {
     private String friendId;
     private String friendName;
     private String friendNameLowerCase;
-    private String friendEmail;
+    private String requestSent;
+    private String requestAccepted;
+
 
     public String getUserId() {
         return getString("userId");
@@ -74,11 +82,22 @@ public class ParseFriend extends ParseObject {
         put("friendNameLowerCase", friendNameLowerCase);
     }
 
-    public String getFriendEmail() {
-        return getString("friendEmail");
+
+    public String getRequestSent() {
+        return getString("requestSent");
     }
 
-    public void setFriendEmail(String friendEmail) {
-        put("friendEmail", friendEmail);
+    public void setRequestSent(String requestSent) {
+        put("requestSent", requestSent);
     }
+
+    public String getRequestAccepted() {
+        return getString("requestAccepted");
+    }
+
+    public void setRequestAccepted(String requestAccepted) {
+        put("requestAccepted", requestAccepted);
+    }
+
+
 }

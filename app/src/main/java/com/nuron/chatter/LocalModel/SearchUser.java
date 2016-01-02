@@ -1,4 +1,4 @@
-package com.nuron.chatter.Model;
+package com.nuron.chatter.LocalModel;
 
 import com.parse.ParseUser;
 

@@ -16,8 +16,9 @@ import com.jakewharton.rxbinding.widget.TextViewTextChangeEvent;
 import com.nuron.chatter.Activities.HomeActivity;
 import com.nuron.chatter.Activities.LoginActivity;
 import com.nuron.chatter.Adapters.SearchAddFriendAdapter;
+import com.nuron.chatter.LocalModel.SearchUser;
 import com.nuron.chatter.Model.ParseFriend;
-import com.nuron.chatter.Model.SearchUser;
+import com.nuron.chatter.Model.ParseFriendRequest;
 import com.nuron.chatter.R;
 import com.nuron.chatter.ViewHolders.SearchAddFriendViewHolder;
 import com.parse.ParseACL;
@@ -152,15 +153,24 @@ public class SearchAndAddFriendFragment extends Fragment {
         searchAddFriendAdapter.clear();
         searchResultText.setText("Loading all users");
 
-        final ParseQuery<ParseFriend> friendsQuery = ParseQuery.getQuery(ParseFriend.class);
-        friendsQuery.whereContains(ParseFriend.USER_ID, ParseUser.getCurrentUser().getObjectId());
-        friendsQuery.addAscendingOrder(ParseFriend.FRIEND_ID);
+        ParseQuery<ParseFriendRequest> friendRequestSentQuery = ParseQuery.getQuery(ParseFriendRequest.class);
+        friendRequestSentQuery.whereEqualTo(ParseFriendRequest.USER_ID, ParseUser.getCurrentUser().getObjectId());
+
+        ParseQuery<ParseFriendRequest> friendRequestReceivedQuery = ParseQuery.getQuery(ParseFriendRequest.class);
+        friendRequestReceivedQuery.whereEqualTo(ParseFriend.FRIEND_ID, ParseUser.getCurrentUser().getObjectId());
+
+        List<ParseQuery<ParseFriendRequest>> queries = new ArrayList<>();
+        queries.add(friendRequestSentQuery);
+        queries.add(friendRequestReceivedQuery);
+
+        final ParseQuery<ParseFriendRequest> allFriendsQuery = ParseQuery.or(queries);
+        allFriendsQuery.addAscendingOrder(ParseFriend.FRIEND_ID);
 
         Observable friendQueryObservable = Observable.fromCallable(
-                new Callable<List<ParseFriend>>() {
+                new Callable<List<ParseFriendRequest>>() {
                     @Override
-                    public List<ParseFriend> call() throws Exception {
-                        return friendsQuery.find();
+                    public List<ParseFriendRequest> call() throws Exception {
+                        return allFriendsQuery.find();
                     }
                 });
 
@@ -177,11 +187,12 @@ public class SearchAndAddFriendFragment extends Fragment {
 
 
         allSubscriptions.add(Observable.zip(allUsersQueryObservable, friendQueryObservable,
-                new Func2<List<ParseUser>, List<ParseFriend>, List<SearchUser>>() {
+                new Func2<List<ParseUser>, List<ParseFriendRequest>, List<SearchUser>>() {
 
                     @Override
-                    public List<SearchUser> call(List<ParseUser> parseUsers, List<ParseFriend> parseFriends) {
-                        return getSearchUsers(parseUsers, parseFriends);
+                    public List<SearchUser> call(List<ParseUser> parseUsers,
+                                                 List<ParseFriendRequest> parseFriendRequests) {
+                        return getSearchUsers(parseUsers, parseFriendRequests);
                     }
                 })
                 .flatMap(new Func1<List<SearchUser>, Observable<SearchUser>>() {
@@ -309,16 +320,25 @@ public class SearchAndAddFriendFragment extends Fragment {
         }
 
 
-        final ParseQuery<ParseFriend> friendsQuery = ParseQuery.getQuery(ParseFriend.class);
-        friendsQuery.whereMatches(ParseFriend.USER_ID, ParseUser.getCurrentUser().getObjectId());
-        friendsQuery.addAscendingOrder(ParseFriend.FRIEND_ID);
+        ParseQuery<ParseFriendRequest> friendRequestSentQuery = ParseQuery.getQuery(ParseFriendRequest.class);
+        friendRequestSentQuery.whereEqualTo(ParseFriendRequest.USER_ID, ParseUser.getCurrentUser().getObjectId());
+
+        ParseQuery<ParseFriendRequest> friendRequestReceivedQuery = ParseQuery.getQuery(ParseFriendRequest.class);
+        friendRequestReceivedQuery.whereEqualTo(ParseFriend.FRIEND_ID, ParseUser.getCurrentUser().getObjectId());
+
+        List<ParseQuery<ParseFriendRequest>> queries1 = new ArrayList<>();
+        queries1.add(friendRequestSentQuery);
+        queries1.add(friendRequestReceivedQuery);
+
+        final ParseQuery<ParseFriendRequest> allFriendsQuery = ParseQuery.or(queries1);
+        allFriendsQuery.addAscendingOrder(ParseFriend.FRIEND_ID);
 
 
         Observable friendQueryObservable = Observable.fromCallable(
-                new Callable<List<ParseFriend>>() {
+                new Callable<List<ParseFriendRequest>>() {
                     @Override
-                    public List<ParseFriend> call() throws Exception {
-                        return friendsQuery.find();
+                    public List<ParseFriendRequest> call() throws Exception {
+                        return allFriendsQuery.find();
                     }
                 });
 
@@ -332,12 +352,12 @@ public class SearchAndAddFriendFragment extends Fragment {
 
 
         searchQuerySub = Observable.zip(searchUsersObservable, friendQueryObservable,
-                new Func2<List<ParseUser>, List<ParseFriend>, List<SearchUser>>() {
+                new Func2<List<ParseUser>, List<ParseFriendRequest>, List<SearchUser>>() {
 
                     @Override
                     public List<SearchUser> call(List<ParseUser> parseUsers,
-                                                 List<ParseFriend> parseFriends) {
-                        return getSearchUsers(parseUsers, parseFriends);
+                                                 List<ParseFriendRequest> parseFriendRequests) {
+                        return getSearchUsers(parseUsers, parseFriendRequests);
                     }
                 })
                 .flatMap(new Func1<List<SearchUser>, Observable<SearchUser>>() {
@@ -386,7 +406,7 @@ public class SearchAndAddFriendFragment extends Fragment {
     }
 
     private List<SearchUser> getSearchUsers(List<ParseUser> parseUsers,
-                                            List<ParseFriend> parseFriends) {
+                                            List<ParseFriendRequest> parseFriendRequests) {
 
         List<SearchUser> searchUserList = new ArrayList<>();
 
@@ -395,12 +415,12 @@ public class SearchAndAddFriendFragment extends Fragment {
             SearchUser searchUser = new SearchUser(parseUser);
             String searchUserObjectId = parseUser.getObjectId();
 
-            for (ParseFriend parseFriend : parseFriends) {
+            for (ParseFriendRequest parseFriendRequest : parseFriendRequests) {
 
-                if (parseFriend.getFriendId().equals(searchUserObjectId)) {
+                if (parseFriendRequest.getFriendId().equals(searchUserObjectId) || parseFriendRequest.getUserId().equals(searchUserObjectId)) {
 
-                    searchUser.setIsRequestSent(parseFriend.getRequestSent());
-                    searchUser.setIsRequestAccepted(parseFriend.getRequestAccepted());
+                    searchUser.setIsRequestSent(parseFriendRequest.getRequestSent());
+                    searchUser.setIsRequestAccepted(parseFriendRequest.getRequestAccepted());
                     break;
                 }
             }
@@ -412,8 +432,8 @@ public class SearchAndAddFriendFragment extends Fragment {
 
     }
 
-    public void addFriend(final SearchAddFriendViewHolder searchAddFriendViewHolder,
-                          int position) {
+    public void sendFriendRequest(final SearchAddFriendViewHolder searchAddFriendViewHolder,
+                                  int position) {
 
         final ParseUser friendUser = searchAddFriendAdapter.getItemAtPos(position).getParseUser();
         if (friendUser != null) {
@@ -421,18 +441,18 @@ public class SearchAndAddFriendFragment extends Fragment {
             searchAddFriendViewHolder.addFriendImage.setVisibility(View.GONE);
             searchAddFriendViewHolder.addFriendProgress.spin();
 
-            ParseFriend parseFriend = new ParseFriend();
+            ParseFriendRequest parseFriendRequest = new ParseFriendRequest();
 
-            parseFriend.setUserId(ParseUser.getCurrentUser().getObjectId());
-            parseFriend.setUserName(ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
-            parseFriend.setUserNameLowercase(ParseUser.getCurrentUser().
+            parseFriendRequest.setUserId(ParseUser.getCurrentUser().getObjectId());
+            parseFriendRequest.setUserName(ParseUser.getCurrentUser().getString(LoginActivity.USER_ACCOUNT_NAME));
+            parseFriendRequest.setUserNameLowercase(ParseUser.getCurrentUser().
                     getString(LoginActivity.USER_ACCOUNT_NAME).toLowerCase());
-            parseFriend.setRequestSent(ParseFriend.STRING_TRUE);
-            parseFriend.setRequestAccepted(ParseFriend.STRING_FALSE);
+            parseFriendRequest.setRequestSent(ParseFriendRequest.STRING_TRUE);
+            parseFriendRequest.setRequestAccepted(ParseFriendRequest.STRING_FALSE);
 
-            parseFriend.setFriendId(friendUser.getObjectId());
-            parseFriend.setFriendName(friendUser.getString(LoginActivity.USER_ACCOUNT_NAME));
-            parseFriend.setFriendNameLowerCase(friendUser.
+            parseFriendRequest.setFriendId(friendUser.getObjectId());
+            parseFriendRequest.setFriendName(friendUser.getString(LoginActivity.USER_ACCOUNT_NAME));
+            parseFriendRequest.setFriendNameLowerCase(friendUser.
                     getString(LoginActivity.USER_ACCOUNT_NAME).toLowerCase());
 
 
@@ -442,19 +462,20 @@ public class SearchAndAddFriendFragment extends Fragment {
             acl.setWriteAccess(ParseUser.getCurrentUser(), true);
             acl.setWriteAccess(friendUser.getObjectId(), true);
 
-            parseFriend.setACL(acl);
+            parseFriendRequest.setACL(acl);
 
-            allSubscriptions.add(ParseObservable.save(parseFriend)
+            allSubscriptions.add(ParseObservable.save(parseFriendRequest)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<ParseFriend>() {
+                    .subscribe(new Subscriber<ParseFriendRequest>() {
                         @Override
                         public void onCompleted() {
 
                             searchAddFriendViewHolder.addFriendProgress.stopSpinning();
                             searchAddFriendViewHolder.addFriendImage.setVisibility(View.GONE);
                             searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.VISIBLE);
-                            Log.d(TAG, "ParseFriend added");
+
+                            Log.d(TAG, "ParseFriendRequest sent");
                         }
 
                         @Override
@@ -462,7 +483,7 @@ public class SearchAndAddFriendFragment extends Fragment {
                         }
 
                         @Override
-                        public void onNext(ParseFriend parseFriend) {
+                        public void onNext(ParseFriendRequest parseFriendRequest) {
                         }
                     })
             );

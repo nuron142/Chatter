@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         applicationId "com.nuron.chatter"
-        minSdkVersion 19
-        targetSdkVersion 23
+        minSdkVersion 21
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }

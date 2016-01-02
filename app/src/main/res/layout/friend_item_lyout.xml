@@ -82,7 +82,7 @@
                         android:src="@drawable/ic_add_black_24dp" />
 
                     <ImageView
-                        android:id="@+id/friend_request_accpted_image"
+                        android:id="@+id/friend_request_sent_image"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_centerInParent="true"

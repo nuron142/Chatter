@@ -12,4 +12,5 @@
     <string name="cloudinary_cloud_name">nuron</string>
     <string name="cloudinary_api_key">485393113461888</string>
     <string name="cloudinary_api_secret">FxSKPjzERXPS8r7nVTzA7HxXdMs</string>
+    <string name="title_activity_friends">Friends</string>
 </resources>
