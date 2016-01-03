@@ -81,7 +81,7 @@ public class AllFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
                 Intent intent = new Intent(context, ChatSingleActivity.class);
                 intent.putExtra(ChatSingleMessage.RECEIVER_ID, parseFriend.getFriendId());
-                intent.putExtra(LoginActivity.USER_ACCOUNT_NAME, parseFriend.getUserName());
+                intent.putExtra(LoginActivity.USER_ACCOUNT_NAME, parseFriend.getFriendName());
                 context.startActivity(intent);
             }
         });

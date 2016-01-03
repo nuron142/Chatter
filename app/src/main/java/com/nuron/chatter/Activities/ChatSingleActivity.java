@@ -90,6 +90,8 @@ public class ChatSingleActivity extends AppCompatActivity {
         receiverName = getIntent().getExtras().getString(LoginActivity.USER_ACCOUNT_NAME);
         senderId = ParseUser.getCurrentUser().getObjectId();
 
+        Log.d(TAG, "receiverName :" + receiverName);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(receiverName);
         setSupportActionBar(toolbar);
@@ -379,7 +381,6 @@ public class ChatSingleActivity extends AppCompatActivity {
                 .map(new Func1<Long, List<ChatSingleMessage>>() {
                     @Override
                     public List<ChatSingleMessage> call(Long aLong) {
-                        Log.d(TAG, "Starting polling");
 
                         emptyItemsLayout.setVisibility(View.GONE);
                         chatSingleMessageAdapter.clear();
