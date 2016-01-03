@@ -1,15 +1,19 @@
 package com.nuron.chatter.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.nuron.chatter.Activities.ChatSingleActivity;
+import com.nuron.chatter.Activities.LoginActivity;
 import com.nuron.chatter.Fragments.AllFriendsFragment;
+import com.nuron.chatter.Model.ChatSingleMessage;
 import com.nuron.chatter.Model.ParseFriend;
 import com.nuron.chatter.R;
-import com.nuron.chatter.ViewHolders.FriendRequestViewHolder;
+import com.nuron.chatter.ViewHolders.AllFriendsViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,54 +61,31 @@ public class AllFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.friend_requests_item_layout, viewGroup, false);
-        return new FriendRequestViewHolder(v);
+                .inflate(R.layout.friend_all_item_layout, viewGroup, false);
+        return new AllFriendsViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, final int position) {
         final ParseFriend parseFriend = parseFriends.get(position);
 
-        final FriendRequestViewHolder searchAddFriendViewHolder =
-                (FriendRequestViewHolder) viewHolder;
+        final AllFriendsViewHolder allFriendsViewHolder =
+                (AllFriendsViewHolder) viewHolder;
 
-        searchAddFriendViewHolder.friendName.setText(parseFriend.getFriendName());
-        searchAddFriendViewHolder.friendEmail.setText(
-                parseFriend.getFriendEmail());
+        allFriendsViewHolder.friendName.setText(parseFriend.getFriendName());
+        allFriendsViewHolder.friendEmail.setText(parseFriend.getFriendEmail());
 
-        boolean disableClick = false;
+        allFriendsViewHolder.friendStartChatLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-//        if (parseFriendRequest.getRequestSent() != null &&
-//                parseFriendRequest.getRequestSent().equals(SearchUser.STRING_TRUE)) {
-//            disableClick = true;
-//
-//            searchAddFriendViewHolder.addFriendImage.setVisibility(View.GONE);
-//            searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.VISIBLE);
-//
-//            if (parseFriendRequest.getRequestAccepted() != null &&
-//                    parseFriendRequest.getRequestAccepted().equals(SearchUser.STRING_TRUE)) {
-//                disableClick = true;
-//
-//                searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.VISIBLE);
-//            }
-//
-//        } else {
-//            searchAddFriendViewHolder.addFriendImage.setVisibility(View.VISIBLE);
-//            searchAddFriendViewHolder.friendRequestAcceptedImage.setVisibility(View.GONE);
-//        }
-//
-//        final boolean disableClick1 = disableClick;
-//        searchAddFriendViewHolder.addFriendLayout.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                if (disableClick1) {
-//                    return;
-//                }
-//
-//                //friendRequestsFragment.sendFriendRequest(searchAddFriendViewHolder, position);
-//            }
-//        });
+                Intent intent = new Intent(context, ChatSingleActivity.class);
+                intent.putExtra(ChatSingleMessage.RECEIVER_ID, parseFriend.getFriendId());
+                intent.putExtra(LoginActivity.USER_ACCOUNT_NAME, parseFriend.getUserName());
+                context.startActivity(intent);
+            }
+        });
+
     }
 
     @Override

@@ -372,10 +372,10 @@ public class ChatSingleActivity extends AppCompatActivity {
         queries.add(receiverQuery);
 
         final ParseQuery<ChatSingleMessage> messageQuery = ParseQuery.or(queries);
-        messageQuery.setLimit(50);
+        messageQuery.setLimit(100);
         messageQuery.addAscendingOrder("createdAt");
 
-        allSubscriptions.add(Observable.interval(0, 20, TimeUnit.SECONDS, Schedulers.newThread())
+        allSubscriptions.add(Observable.interval(0, 10, TimeUnit.SECONDS, Schedulers.newThread())
                 .map(new Func1<Long, List<ChatSingleMessage>>() {
                     @Override
                     public List<ChatSingleMessage> call(Long aLong) {

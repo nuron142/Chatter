@@ -126,7 +126,6 @@ public class AllFriendsFragment extends Fragment {
                 .flatMap(new Func1<List<ParseFriend>, Observable<ParseFriend>>() {
                     @Override
                     public Observable<ParseFriend> call(List<ParseFriend> parseFriends) {
-                        Log.d(TAG, "parseFriends size : " + parseFriends.size());
                         return Observable.from(parseFriends);
                     }
                 })
