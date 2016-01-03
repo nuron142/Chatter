@@ -75,7 +75,18 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             @Override
             public void onClick(View v) {
 
-                friendRequestsFragment.handleFriendRequest(friendRequestViewHolder, position ,true);
+                friendRequestsFragment.
+                        handleFriendRequest(friendRequestViewHolder, position, true);
+
+            }
+        });
+
+        friendRequestViewHolder.rejectFriendLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                friendRequestsFragment.
+                        handleFriendRequest(friendRequestViewHolder, position, false);
 
             }
         });

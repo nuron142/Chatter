@@ -252,6 +252,45 @@ public class FriendRequestsFragment extends Fragment {
                         })
                 );
 
+            } else {
+
+                friendRequestViewHolder.rejectFriendImage.setVisibility(View.INVISIBLE);
+                friendRequestViewHolder.rejectFriendProgress.spin();
+
+                allSubscriptions.add(Observable.fromCallable(
+                        new Callable<Void>() {
+                            @Override
+                            public Void call() throws Exception {
+                                parseFriendRequest.delete();
+                                return null;
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Subscriber<Void>() {
+                            @Override
+                            public void onCompleted() {
+
+                                Log.d(TAG, "ParseFriendRequest rejected");
+
+                                friendRequestViewHolder.acceptFriendProgress.stopSpinning();
+                                friendRequestsAdapter.removeData(position);
+                                friendRequestsAdapter.notifyItemRemoved(position);
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                friendRequestViewHolder.acceptFriendProgress.stopSpinning();
+                                Toast.makeText(getActivity(), "Could reject request",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onNext(Void aVoid) {
+
+                            }
+                        })
+                );
             }
 
         }
